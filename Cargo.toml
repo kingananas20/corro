@@ -1,0 +1,9 @@
+[package]
+name = "rust-play-bot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dotenv = "0.15.0"
+serenity = "0.12.4"
+tokio = { version = "1.45.0", features = ["full"] }
