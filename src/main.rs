@@ -1,10 +1,14 @@
 mod commands;
+mod extract_code;
 
 use dotenv::dotenv;
+use extract_code::extract_code;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::prelude::*;
 use std::env;
+
+const PLAYGROUND_URL: &str = "https://play.rust-lang.org/";
 
 struct Handler;
 
@@ -14,12 +18,13 @@ impl EventHandler for Handler {
         if msg.content.starts_with("/run") {
             let lines: Vec<_> = msg.content.lines().collect();
 
-            let config = commands::run::parse_run_command(lines[0], "");
-            if let Err(e) = msg
-                .channel_id
-                .say(&ctx.http, format!("{:#?}", config))
-                .await
-            {
+            let code = extract_code(&msg.content);
+
+            let config = commands::run::parse_run_command(lines[0], code);
+            let client = playground_api::Client::new(PLAYGROUND_URL);
+            let res = client.execute(&config).await.unwrap();
+
+            if let Err(e) = msg.reply(&ctx.http, format!("```{}```", res.stdout)).await {
                 println!("failed to respond:\n{:?}", e);
             }
         }
