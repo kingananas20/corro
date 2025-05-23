@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 dotenv = "0.15.0"
-playground-api = "0.1.10"
+playground-api = "0.2"
 regex = "1.11.1"
 serenity = "0.12.4"
 tokio = { version = "1.45.0", features = ["full"] }
