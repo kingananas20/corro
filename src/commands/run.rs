@@ -4,13 +4,7 @@ use poise::{CreateReply, command};
 
 /// Define a `/run` command, available as both prefix and slash command
 #[command(prefix_command)]
-pub async fn run(
-    // Poise provides the context, containing data, HTTP client, etc.
-    ctx: Context<'_>,
-    // Capture the rest of the user input as the `code` string
-    #[rest] code: String,
-) -> Result<(), Error> {
-    // Send an initial message and store the sent message for later editing
+pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let reply = ctx
         .send(
             CreateReply::default()
@@ -19,18 +13,21 @@ pub async fn run(
         )
         .await?;
 
-    let code = crate::extract_code::extract_code(&code);
+    let parameters = match input.lines().next() {
+        Some(line) if !line.trim_start().starts_with("```") => line,
+        _ => "",
+    };
+    let code = crate::extract_code::extract_code(&input);
 
-    // Parse the `/cargo run` command and code block into a playground API config
-    let config = parse_run_command("/cargo run", code);
-    // Execute the code remotely and unwrap the result
+    let config = parse_run_command(parameters, code);
     let res = ctx.data().playground_client.execute(&config).await?;
 
-    // Edit the original reply to include the output from the Playground
+    let content = if res.success { res.stdout } else { res.stderr };
+
     reply
         .edit(
             ctx,
-            CreateReply::default().content(format!("```\n{}\n```", res.stdout)),
+            CreateReply::default().content(format!("```{}```", content)),
         )
         .await?;
 
