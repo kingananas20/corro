@@ -1,8 +1,7 @@
 use dotenv::dotenv;
+use playground_bot::{Data, Error, commands};
 use poise::{Framework, FrameworkOptions, serenity_prelude as serenity};
 use std::env;
-
-use playground_bot::{Data, Error};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -17,7 +16,7 @@ async fn main() -> Result<(), Error> {
             prefix: Some("!".into()),
             ..Default::default()
         },
-        commands: vec![playground_bot::commands::run()],
+        commands: vec![commands::run(), commands::share()],
         ..Default::default()
     };
 
