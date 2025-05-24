@@ -1,8 +1,8 @@
-use crate::{Context, Error};
+use crate::{Context, Error, common::limit_string};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, command};
 
-/// Define a `/run` command, available as both prefix and slash command
+/// Define a `run` command, available as a prefix command
 #[command(prefix_command)]
 pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let reply = ctx
@@ -23,6 +23,7 @@ pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let res = ctx.data().playground_client.execute(&config).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
+    let content = limit_string(&content);
 
     reply
         .edit(

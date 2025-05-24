@@ -1,4 +1,5 @@
 pub mod commands;
+pub mod common;
 mod extract_code;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
