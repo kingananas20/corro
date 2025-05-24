@@ -1,11 +1,11 @@
 [package]
-name = "rust-play-bot"
+name = "playground-bot"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 dotenv = "0.15.0"
 playground-api = "0.2"
+poise = "0.6.1"
 regex = "1.11.1"
-serenity = "0.12.4"
 tokio = { version = "1.45.0", features = ["full"] }
