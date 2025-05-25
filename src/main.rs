@@ -16,7 +16,7 @@ async fn main() -> Result<(), Error> {
             prefix: Some("!".into()),
             ..Default::default()
         },
-        commands: vec![commands::run(), commands::share()],
+        commands: vec![commands::run(), commands::share(), commands::versions()],
         ..Default::default()
     };
 
