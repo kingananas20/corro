@@ -19,17 +19,19 @@ pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     };
     let code = crate::extract_code::extract_code(&input);
 
-    let config = parse_run_command(parameters, code);
-    let res = ctx.data().playground_client.execute(&config).await?;
+    let req = parse_run_command(parameters, code);
+    let res = ctx.data().playground_client.execute(&req).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
     let content = limit_string(&content);
+    let content = if !content.is_empty() {
+        format!("```{}```", content)
+    } else {
+        "Your code ran without output.".to_owned()
+    };
 
     reply
-        .edit(
-            ctx,
-            CreateReply::default().content(format!("```{}```", content)),
-        )
+        .edit(ctx, CreateReply::default().content(content))
         .await?;
 
     // Return Ok to signal successful command execution
