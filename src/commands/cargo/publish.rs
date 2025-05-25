@@ -3,7 +3,7 @@ use playground_api::endpoints::GistCreateRequest;
 use poise::{CreateReply, command};
 
 #[command(prefix_command)]
-pub async fn share(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+pub async fn publish(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let reply = ctx
         .send(
             CreateReply::default()
