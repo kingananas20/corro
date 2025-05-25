@@ -9,30 +9,25 @@
 
 ---
 
-## 🧪 Planned Commands
-
-- Run code with the Miri interpreter (`miri`)
-- Explain error codes (`explain`)
-
----
+# 🧪 Planned Commands
 
 ## 🔧 Code Utilities
 
 - `<prefix>fmt` — Format Rust code using `rustfmt`.
 - `<prefix>clippy` — Run clippy lints on code and return warnings/suggestions.
+- `<prefix>miri` — Run rust code using the miri interpreter
 - `<prefix>check` — Type-check code without running.
 - `<prefix>build` — Try building the code and return success/errors.
-- `<prefix>bench` — Benchmark simple functions (if sandboxed).
-- `<prefix>test` — Run unit tests in provided code.
+- `<prefix>bench` — Benchmark simple functions. // probably not
+- `<prefix>test` — Run unit tests in provided code. // supported in run command
 
 ---
 
 ## 📚 Learning & Assistance
 
-- `<prefix>doc <item>` — Fetch docs from [docs.rs](https://docs.rs) or Rust stdlib.
-- `<prefix>book <chapter/topic>` — Link to a section in *The Rust Book*.
-- `<prefix>play <code>` — Run code on the Rust Playground (or generate link).
-- `<prefix>edition` — Convert code to a specific Rust edition (2015/2018/2021).
+- `<prefix>doc <item>` — Fetch docs from [docs.rs](https://docs.rs) or Rust stdlib. // if possible
+- `<prefix>book <chapter/topic>` — Link to a section in *The Rust Book*.  // if possible
+- `<prefix>edition` — Convert code to a specific Rust edition (2015/2018/2021). // probably not
 - `<prefix>explain <E####>` — Explain a Rust compiler error code.
 
 ---
@@ -40,7 +35,7 @@
 ## 🧠 Linting & Help
 
 - `<prefix>help <topic>` — Explain common Rust idioms or errors.
-- `<prefix>lint` — Style or logic suggestions (simplified clippy).
+- `<prefix>lint` — Style or logic suggestions (simplified clippy).  // no clippy is good
 - `<prefix>tips` — Random Rust tip or idiom with example.
 - `<prefix>why <concept>` — Explain *why* a concept exists (e.g., "why lifetimes?").
 
@@ -49,13 +44,13 @@
 ## 🔍 Metadata & Tooling
 
 - `<prefix>crate <name>` — Fetch crate info from crates.io.
-- `<prefix>depgraph` — Generate a dependency graph.
 - `<prefix>version` — Show toolchain version used (rustc, cargo).
+- `<prefiy>crates` — Show the available crates to use when running code.
 - `<prefix>features <crate>` — Show optional features of a crate.
 
 ---
 
-## 🎯 Community & Fun
+## 🎯 Community & Fun (maybe)
 
 - `<prefix>quote` — Show a random quote from the Rust community.
 - `<prefix>meme` — Post a Rust programming meme.
