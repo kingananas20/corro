@@ -17,8 +17,6 @@ pub async fn explain(
         }
     };
 
-    // Convert this so that it reads the markdown files instead of running this command and
-    // and then just runs returns it in a string.
     let output = Command::new("rustc")
         .arg("--explain")
         .arg(error_code.as_ref())
