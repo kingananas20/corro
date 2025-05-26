@@ -5,7 +5,8 @@ edition = "2024"
 
 [dependencies]
 dotenv = "0.15.0"
-playground-api = { path = "../playground-api/" }
+playground-api = { path = "../playground-api/", features = ["poise-bot"] }
 poise = "0.6.1"
 regex = "1.11.1"
+strum = { version = "0.27.1", features = ["derive"] }
 tokio = { version = "1.45.0", features = ["full"] }

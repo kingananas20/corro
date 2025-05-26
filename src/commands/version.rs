@@ -6,7 +6,7 @@ use poise::{
 };
 
 #[command(slash_command, prefix_command)]
-pub async fn versions(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
+pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
     let res = ctx.data().playground_client.versions().await?;
 
     let (rustc, clippy, rustfmt, miri) = match channel {

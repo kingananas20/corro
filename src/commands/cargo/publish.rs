@@ -2,7 +2,7 @@ use crate::{Context, Error};
 use playground_api::endpoints::GistCreateRequest;
 use poise::{CreateReply, command};
 
-#[command(prefix_command)]
+#[command(prefix_command, guild_cooldown = 60)]
 pub async fn publish(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let reply = ctx
         .send(

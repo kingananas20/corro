@@ -4,8 +4,9 @@
 
 ## ✅ Supported Commands
 
-- `<prefix>run` — Run Rust code.
-- `<prefix>share` — Upload code to GitHub Gist.
+- `<prefix>cargo run` — Run Rust code.
+- `<prefix>cargo publish` — Upload code to GitHub Gist.
+- `<prefix>version` — Show toolchain version used (rustc, cargo).
 
 ---
 
@@ -44,7 +45,6 @@
 ## 🔍 Metadata & Tooling
 
 - `<prefix>crate <name>` — Fetch crate info from crates.io.
-- `<prefix>version` — Show toolchain version used (rustc, cargo).
 - `<prefiy>crates` — Show the available crates to use when running code.
 - `<prefix>features <crate>` — Show optional features of a crate.
 
