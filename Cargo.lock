@@ -155,6 +155,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cargo-bot"
+version = "0.1.0"
+dependencies = [
+ "dotenv",
+ "playground-api",
+ "poise",
+ "regex",
+ "strum",
+ "tokio",
+]
+
+[[package]]
 name = "cargo-platform"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1219,18 +1231,6 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "url",
-]
-
-[[package]]
-name = "playground-bot"
-version = "0.1.0"
-dependencies = [
- "dotenv",
- "playground-api",
- "poise",
- "regex",
- "strum",
- "tokio",
 ]
 
 [[package]]

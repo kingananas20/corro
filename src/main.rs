@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use playground_bot::{Data, Error, commands};
+use cargo_bot::{Data, Error, commands};
 use poise::{Framework, FrameworkOptions, serenity_prelude as serenity};
 use std::env;
 
