@@ -1,6 +1,6 @@
 use crate::{Context, Error};
 use poise::{self, CreateReply};
-use std::{fs, process::Command, str::FromStr};
+use std::{fs, str::FromStr};
 use strum::IntoEnumIterator;
 
 #[poise::command(slash_command, prefix_command)]
@@ -16,18 +16,7 @@ pub async fn explain(
         }
     };
 
-    // Convert this to read from custom markdown files for better efficiency and better responses
-    /*let output = Command::new("rustc")
-    .arg("--explain")
-    .arg(error_code.as_ref())
-    .output()?;
-
-    let msg = if output.status.success() {
-        String::from_utf8_lossy(&output.stdout).to_string()
-    } else {
-        format!("Error code {} doesn't exist!", error_code.as_ref())
-    };*/
-
+    // Changed the remaining error_codes.md to custom ones currently at E0094
     let msg = fs::read_to_string(format!("error_codes/{}.md", error_code.as_ref()))?;
 
     ctx.send(CreateReply::default().content(msg)).await?;
