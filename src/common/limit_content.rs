@@ -1,4 +1,4 @@
-pub(crate) fn limit_string(input: &str) -> String {
+pub fn limit_string(input: &str) -> String {
     let limited_lines = input.lines().take(100).collect::<Vec<&str>>().join("\n");
 
     let bytes = limited_lines.as_bytes();

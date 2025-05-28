@@ -35,7 +35,7 @@
 
 ## 🧠 Linting & Help
 
-- `<prefix>help <topic>` — Explain common Rust idioms or errors.
+- `<prefix>help <topic>` — Explain common Rust idioms.
 - `<prefix>lint` — Style or logic suggestions (simplified clippy).  // no clippy is good
 - `<prefix>tips` — Random Rust tip or idiom with example.
 - `<prefix>why <concept>` — Explain *why* a concept exists (e.g., "why lifetimes?").

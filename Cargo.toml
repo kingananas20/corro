@@ -2,6 +2,7 @@
 name = "cargo-bot"
 version = "0.1.0"
 edition = "2024"
+default-run = "cargo-bot"
 
 [dependencies]
 dotenv = "0.15.0"

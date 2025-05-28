@@ -1,5 +1,5 @@
-use crate::{Context, Error};
-use poise::{self, CreateReply};
+use crate::{Context, Error, common::split_content};
+use poise::{self, CreateReply, serenity_prelude::CreateEmbed};
 use std::{fs, str::FromStr};
 use strum::IntoEnumIterator;
 
@@ -17,9 +17,25 @@ pub async fn explain(
     };
 
     // Changed the remaining error_codes.md to custom ones currently at E0094
-    let msg = fs::read_to_string(format!("error_codes/{}.md", error_code.as_ref()))?;
+    let content = fs::read_to_string(format!("error_codes/{}.md", error_code.as_ref()))?;
+    println!("{}", content.len());
+    let content = split_content(content);
+    let mut reply = CreateReply::default();
 
-    ctx.send(CreateReply::default().content(msg)).await?;
+    for (i, msg) in content.iter().enumerate() {
+        let mut embed = CreateEmbed::new().color((255, 0, 0)).description(msg);
+
+        if i == 0 {
+            embed = embed.title(error_code.as_ref()).url(format!(
+                "https://doc.rust-lang.org/error_codes/{}.html",
+                error_code.as_ref()
+            ));
+        }
+
+        reply = reply.embed(embed);
+    }
+
+    ctx.send(reply).await?;
 
     Ok(())
 }
