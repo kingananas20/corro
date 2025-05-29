@@ -4,10 +4,13 @@
 
 ## ✅ Supported Commands
 
-- `!cargo run` — Run Rust code.
-- `!cargo publish` — Upload code to GitHub Gist.
+  prefix = `!`
+
+- `<prefix>cargo run` — Run Rust code.
+- `<prefix>cargo publish` — Upload code to GitHub Gist.
 - `/version` — Show toolchain version used (rustc, cargo).
 - `/explain <E####>` — Explain a Rust compiler error code.
+- `/crates` — Show the available crates to use when running code.
 
 ---
 
@@ -45,8 +48,7 @@
 ## 🔍 Metadata & Tooling
 
 - `<prefix>crate <name>` — Fetch crate info from crates.io.
-- `<prefiy>crates` — Show the available crates to use when running code.
-- `<prefix>features <crate>` — Show optional features of a crate.
+- `<prefix>features <crate>` — Show optional features of a crate. // maybe
 
 ---
 
