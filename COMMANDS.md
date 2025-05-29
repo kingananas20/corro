@@ -4,9 +4,10 @@
 
 ## ✅ Supported Commands
 
-- `<prefix>cargo run` — Run Rust code.
-- `<prefix>cargo publish` — Upload code to GitHub Gist.
-- `<prefix>version` — Show toolchain version used (rustc, cargo).
+- `!cargo run` — Run Rust code.
+- `!cargo publish` — Upload code to GitHub Gist.
+- `/version` — Show toolchain version used (rustc, cargo).
+- `/explain <E####>` — Explain a Rust compiler error code.
 
 ---
 
@@ -29,7 +30,6 @@
 - `<prefix>doc <item>` — Fetch docs from [docs.rs](https://docs.rs) or Rust stdlib. // if possible
 - `<prefix>book <chapter/topic>` — Link to a section in *The Rust Book*.  // if possible
 - `<prefix>edition` — Convert code to a specific Rust edition (2015/2018/2021). // probably not
-- `<prefix>explain <E####>` — Explain a Rust compiler error code.
 
 ---
 
