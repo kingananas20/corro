@@ -5,6 +5,7 @@ use poise::{
     serenity_prelude::{CreateEmbed, CreateEmbedAuthor},
 };
 
+/// Get the current `rustc`, `clippy`, `rustfmt` and `miri` versions used when running `!cargo run`
 #[command(slash_command, prefix_command)]
 pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
     let res = ctx.data().playground_client.versions().await?;

@@ -3,6 +3,7 @@ use poise::{self, CreateReply, serenity_prelude::CreateEmbed};
 use std::{fs, str::FromStr};
 use strum::IntoEnumIterator;
 
+/// Get an explanation for a specified rust compiler error
 #[poise::command(slash_command, prefix_command)]
 pub async fn explain(
     ctx: Context<'_>,

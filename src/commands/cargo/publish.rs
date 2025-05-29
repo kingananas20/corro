@@ -2,6 +2,7 @@ use crate::{Context, Error};
 use playground_api::endpoints::GistCreateRequest;
 use poise::{CreateReply, command};
 
+/// Publish code in a code block to GitHub Gists
 #[command(prefix_command, guild_cooldown = 60)]
 pub async fn publish(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let reply = ctx

@@ -2,7 +2,7 @@ use crate::{Context, Error, common::limit_string};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, command};
 
-/// Define a `run` command, available as a prefix command
+/// Runs code from a code block in the Rust playground and returns the output
 #[command(prefix_command)]
 pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let reply = ctx
