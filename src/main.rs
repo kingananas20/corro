@@ -1,7 +1,10 @@
+use cargo_bot::{Context, Data, Error, commands};
 use dotenv::dotenv;
-use cargo_bot::{Data, Error, commands};
-use poise::{Framework, FrameworkOptions, serenity_prelude as serenity};
-use std::env;
+use poise::{
+    Framework, FrameworkOptions,
+    serenity_prelude::{self as serenity, UserId},
+};
+use std::{collections::HashSet, env};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -9,6 +12,8 @@ async fn main() -> Result<(), Error> {
     let token = env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
     let intents =
         serenity::GatewayIntents::GUILD_MESSAGES | serenity::GatewayIntents::MESSAGE_CONTENT;
+    let mut owners = HashSet::new();
+    owners.insert(UserId::new(863480661007138858));
 
     // Configure Poise framework options, including prefix settings and commands
     let options = FrameworkOptions {
@@ -16,16 +21,22 @@ async fn main() -> Result<(), Error> {
             prefix: Some("!".into()),
             ..Default::default()
         },
-        commands: vec![commands::cargo(), commands::version(), commands::explain()],
+        commands: vec![
+            register(),
+            commands::cargo(),
+            commands::version(),
+            commands::explain(),
+            commands::crates(),
+        ],
+        owners,
         ..Default::default()
     };
 
     // Build and start the Poise framework with the options
     let framework = Framework::builder()
         .options(options)
-        .setup(|ctx, ready, framework| {
+        .setup(|_ctx, ready, _framework| {
             Box::pin(async move {
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 println!("{} is connected!", ready.user.name);
                 Ok(Data::default())
             })
@@ -40,5 +51,11 @@ async fn main() -> Result<(), Error> {
     // Start the discord bot
     client.start().await?;
 
+    Ok(())
+}
+
+#[poise::command(prefix_command, owners_only)]
+async fn register(ctx: Context<'_>) -> Result<(), Error> {
+    poise::builtins::register_application_commands_buttons(ctx).await?;
     Ok(())
 }
