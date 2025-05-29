@@ -11,16 +11,19 @@ pub async fn explain(
     let error_code = match ErrorCodes::from_str(&error_code) {
         Ok(variant) => variant,
         Err(_) => {
-            ctx.say("Please choose a valid error code.").await?;
+            ctx.send(
+                CreateReply::default()
+                    .content("Please pass in a valid error code.")
+                    .ephemeral(true),
+            )
+            .await?;
             return Ok(());
         }
     };
 
     // Changed the remaining error_codes.md to custom ones currently at E0094
     let content = fs::read_to_string(format!("error_codes/{}.md", error_code.as_ref()))?;
-    println!("{}", content.len());
     let content = split_content(content);
-    let mut reply = CreateReply::default();
 
     for (i, msg) in content.iter().enumerate() {
         let mut embed = CreateEmbed::new().color((255, 0, 0)).description(msg);
@@ -32,10 +35,9 @@ pub async fn explain(
             ));
         }
 
-        reply = reply.embed(embed);
+        let reply = CreateReply::default().embed(embed);
+        ctx.send(reply).await?;
     }
-
-    ctx.send(reply).await?;
 
     Ok(())
 }

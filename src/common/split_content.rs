@@ -1,12 +1,24 @@
 const EMBED_DESCRIPTION_SIZE: usize = 4096;
 
 pub fn split_content(content: String) -> Vec<String> {
-    let n = content.len() % EMBED_DESCRIPTION_SIZE;
     let mut result = Vec::new();
+    let mut start = 0;
 
-    for i in 0..n {
-        let s = content[i * EMBED_DESCRIPTION_SIZE..(i + 1) * EMBED_DESCRIPTION_SIZE].to_owned();
-        result.push(s);
+    while start < content.len() {
+        let mut end = (start + EMBED_DESCRIPTION_SIZE).min(content.len());
+
+        while !content.is_char_boundary(end) {
+            end -= 1;
+        }
+
+        if end <= start {
+            end = (start + EMBED_DESCRIPTION_SIZE).min(content.len());
+        }
+
+        println!("{}, {}", start, end);
+
+        result.push(content[start..end].to_string());
+        start = end;
     }
 
     result
