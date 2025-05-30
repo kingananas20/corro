@@ -28,9 +28,7 @@ impl Client {
         U: for<'de> Deserialize<'de> + Debug,
     {
         let mut conn = self.redis_client.get_multiplexed_tokio_connection().await?;
-        println!("1");
         let value: Option<String> = conn.get(key).await?;
-        println!("{:?}", value);
 
         match value {
             Some(content) => {
