@@ -49,8 +49,8 @@ pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
             CreateEmbedAuthor::new("Cargo").url("https://github.com/kingananas20/playground-bot"),
         );
 
-    if miri.is_some() {
-        embed = embed.field("miri", miri.unwrap().version, true);
+    if let Some(miri_version) = miri {
+        embed = embed.field("miri", miri_version.version, true);
     }
 
     let reply = CreateReply::default().embed(embed);
