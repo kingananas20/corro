@@ -7,9 +7,17 @@ pub async fn crates(
     ctx: Context<'_>,
     #[description = "Which page (25 per page)?"] page: Option<usize>,
 ) -> Result<(), Error> {
-    let crates = ctx.data().playground_client.crates().await?;
+    let crates = match ctx.data().redis_client.get("crates").await {
+        Ok(Some(crates)) => crates,
+        Ok(None) => {
+            let res = ctx.data().playground_client.crates().await?;
+            ctx.data().redis_client.set("crates", &res, 86400).await?;
+            res
+        }
+        Err(e) => return Err(e),
+    };
     let page = page.unwrap_or(1);
-    let per_page = 25;
+    let per_page = 24;
 
     let total_pages = crates.crates.len().div_ceil(per_page);
     if page > total_pages {
