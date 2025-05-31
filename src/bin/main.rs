@@ -27,6 +27,7 @@ async fn main() -> Result<(), Error> {
             commands::version(),
             commands::explain(),
             commands::crates(),
+            commands::krate(),
         ],
         owners,
         ..Default::default()
