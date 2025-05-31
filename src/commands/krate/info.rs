@@ -59,7 +59,7 @@ pub async fn info(
     }
 
     if let Some(description) = crate_data.description {
-        embed = embed.description(description);
+        embed = embed.description(description.trim_end_matches("\n").to_owned() + &format!("\n[crates.io](https://crates.io/crates/{0}) / [docs.rs](https://docs.rs/{0}/latest)", crate_data.id));
     }
 
     if let Some(user) = &crate_info.crate_response.versions[0].published_by {
