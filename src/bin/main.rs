@@ -1,4 +1,4 @@
-use corro::{Context, Data, Error, commands};
+use corro::{Context, Data, Error, commands, on_error};
 use dotenv::dotenv;
 use poise::{
     Framework, FrameworkOptions,
@@ -30,6 +30,7 @@ async fn main() -> Result<(), Box<Error>> {
             commands::krate(),
         ],
         owners,
+        on_error: |err| Box::pin(on_error(err)),
         ..Default::default()
     };
 

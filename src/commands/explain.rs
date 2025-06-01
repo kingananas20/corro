@@ -54,6 +54,7 @@ async fn autocomplete_rustc_error(_ctx: Context<'_>, focused: &str) -> Vec<Strin
     Debug, Clone, Copy, PartialEq, Eq, strum::EnumIter, strum::AsRefStr, strum::EnumString,
 )]
 enum ErrorCodes {
+    E0000,
     E0001,
     E0002,
     E0004,

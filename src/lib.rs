@@ -3,6 +3,8 @@ pub mod commands;
 mod common;
 mod error;
 
+pub use error::on_error;
+
 //pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Error = error::Error;
 
