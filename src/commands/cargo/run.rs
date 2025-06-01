@@ -1,4 +1,4 @@
-use crate::{Context, Error, common::limit_string};
+use crate::{Context, Error, common::limit_string, error::CommandError};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, command};
 
@@ -18,6 +18,9 @@ pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
         _ => "",
     };
     let code = crate::common::extract_code(&input);
+    if code.is_empty() {
+        return Err(CommandError::NoCode.into());
+    }
 
     let req = parse_run_command(parameters, code);
     let res = ctx.data().playground_client.execute(&req).await?;

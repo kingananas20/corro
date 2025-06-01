@@ -2,7 +2,16 @@ use crate::{Data, cache::CacheError};
 use poise::FrameworkError;
 
 #[derive(Debug, thiserror::Error)]
+pub enum CommandError {
+    #[error("")]
+    NoCode,
+}
+
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("following command error occured (non critical): {0:?}")]
+    Command(#[from] CommandError),
+
     #[error("Error accessing the cache: {0:?}")]
     Database(#[from] CacheError),
 
@@ -31,11 +40,17 @@ impl Error {
 
         "Internal server error".to_owned()
     }
+
+    fn should_log(&self) -> bool {
+        !matches!(self, Error::Command(_))
+    }
 }
 
 pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     if let FrameworkError::Command { error, ctx, .. } = error {
-        eprintln!("Error occured: {:#?}", error);
+        if error.should_log() {
+            eprintln!("Error occured: {:#?}", error);
+        }
 
         let user_msg = error.user_message();
         let _ = ctx.say(user_msg).await;
