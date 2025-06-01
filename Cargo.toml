@@ -1,11 +1,11 @@
 [package]
-name = "cargo-bot"
+name = "corro"
 version = "0.1.0"
 edition = "2024"
-default-run = "cargo-bot"
+default-run = "corro"
 
 [[bin]]
-name = "cargo-bot"
+name = "corro"
 path = "src/bin/main.rs"
 
 [dependencies]

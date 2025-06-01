@@ -1,4 +1,4 @@
-use cargo_bot::{Context, Data, Error, commands};
+use corro::{Context, Data, Error, commands};
 use dotenv::dotenv;
 use poise::{
     Framework, FrameworkOptions,
