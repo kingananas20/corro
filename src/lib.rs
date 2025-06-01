@@ -1,7 +1,7 @@
 mod cache;
 pub mod commands;
 mod common;
-mod extract_code;
+mod error;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 

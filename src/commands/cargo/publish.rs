@@ -13,7 +13,7 @@ pub async fn publish(ctx: Context<'_>, #[rest] input: String) -> Result<(), Erro
         )
         .await?;
 
-    let code = crate::extract_code::extract_code(&input);
+    let code = crate::common::extract_code(&input);
     let res = ctx
         .data()
         .playground_client

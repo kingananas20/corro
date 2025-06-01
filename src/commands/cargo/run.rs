@@ -17,7 +17,7 @@ pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
         Some(line) if !line.trim_start().starts_with("```") => line,
         _ => "",
     };
-    let code = crate::extract_code::extract_code(&input);
+    let code = crate::common::extract_code(&input);
 
     let req = parse_run_command(parameters, code);
     let res = ctx.data().playground_client.execute(&req).await?;
