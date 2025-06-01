@@ -31,7 +31,7 @@ pub async fn info(
                 .await?;
             crate_info
         }
-        Err(e) => return Err(e),
+        Err(e) => return Err(Error::Database(e)),
     };
 
     let crate_data = crate_info.crate_response.crate_data;

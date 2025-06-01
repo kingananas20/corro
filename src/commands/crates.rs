@@ -14,7 +14,7 @@ pub async fn crates(
             ctx.data().redis_client.set("crates", &res, 86400).await?;
             res
         }
-        Err(e) => return Err(e),
+        Err(e) => return Err(Error::Database(e)),
     };
     let page = page.unwrap_or(1);
     let per_page = 24;

@@ -15,7 +15,7 @@ pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
             ctx.data().redis_client.set("version", &res, 86400).await?;
             res
         }
-        Err(e) => return Err(e),
+        Err(e) => return Err(Error::Database(e)),
     };
 
     let (rustc, clippy, rustfmt, miri) = match channel {

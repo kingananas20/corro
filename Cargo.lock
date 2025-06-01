@@ -250,6 +250,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum",
+ "thiserror 2.0.12",
  "thousands",
  "tokio",
 ]

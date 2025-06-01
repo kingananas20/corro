@@ -7,7 +7,7 @@ use poise::{
 use std::{collections::HashSet, env};
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), Box<Error>> {
     dotenv().ok();
     let token = env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
     let intents =
@@ -47,10 +47,14 @@ async fn main() -> Result<(), Error> {
     // Build the discord bot client
     let mut client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
-        .await?;
+        .await
+        .map_err(|e| Box::new(Error::Poise(e)))?;
 
     // Start the discord bot
-    client.start().await?;
+    client
+        .start()
+        .await
+        .map_err(|e| Box::new(Error::Poise(e)))?;
 
     Ok(())
 }

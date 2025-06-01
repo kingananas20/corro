@@ -21,3 +21,4 @@ serde_json = "1"
 crates_io_api = "0.11.0"
 chrono = { version = "0.4.41", features = ["serde"] }
 thousands = "0.2.0"
+thiserror = "2.0.12"
