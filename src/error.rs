@@ -4,7 +4,7 @@ use poise::FrameworkError;
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
     #[error("")]
-    NoCode,
+    NoCodeBlock,
 
     #[error("")]
     InvalidErrorCode(String),
@@ -37,6 +37,14 @@ impl Error {
             return format!("{}", e);
         }
 
+        if let Error::Command(CommandError::NoCodeBlock) = self {
+            return r#"Please provide a code block with the following syntax:
+\`\`\`rust
+/* your rust code */
+\`\`\`"#
+                .to_owned();
+        }
+
         if let Error::Command(CommandError::InvalidErrorCode(e)) = self {
             return format!(
                 "Invalid error code `{}`! Please pass in a correct error code.",
@@ -52,7 +60,8 @@ impl Error {
     }
 
     fn should_log(&self) -> bool {
-        !matches!(self, Error::Command(_))
+        // !matches!(self, Error::Command(_))
+        true
     }
 }
 

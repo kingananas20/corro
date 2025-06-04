@@ -1,26 +1,15 @@
-use crate::{Context, Error, common::limit_string, error::CommandError};
+use crate::{Context, Error, common::limit_string};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, command};
 
 /// Runs code from a code block in the Rust playground and returns the output
 #[command(prefix_command)]
 pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    let reply = ctx
-        .send(
-            CreateReply::default()
-                .reply(true)
-                .content("Executing code..."),
-        )
-        .await?;
-
     let parameters = match input.lines().next() {
         Some(line) if !line.trim_start().starts_with("```") => line,
         _ => "",
     };
-    let code = crate::common::extract_code(&input);
-    if code.is_empty() {
-        return Err(CommandError::NoCode.into());
-    }
+    let code = crate::common::extract_code(&input)?;
 
     let req = parse_run_command(parameters, code);
     let res = ctx.data().playground_client.execute(&req).await?;
@@ -28,14 +17,12 @@ pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     let content = if res.success { res.stdout } else { res.stderr };
     let content = limit_string(&content);
     let content = if !content.is_empty() {
-        format!("```{}```", content)
+        format!("<@{}>```{}```", ctx.author().id, content)
     } else {
         "Your code ran without output.".to_owned()
     };
 
-    reply
-        .edit(ctx, CreateReply::default().content(content))
-        .await?;
+    ctx.send(CreateReply::default().content(content)).await?;
 
     // Return Ok to signal successful command execution
     Ok(())

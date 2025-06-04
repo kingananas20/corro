@@ -8,10 +8,9 @@ pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> 
         Some(line) if !line.trim_start().starts_with("```") => line,
         _ => "",
     };
-    let code = crate::common::extract_code(&input);
+    let code = crate::common::extract_code(&input)?;
 
-    let mut req = parse_miri(parameters);
-    req.code = code;
+    let req = parse_miri(parameters, code);
     let res = ctx.data().playground_client.miri(&req).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
@@ -27,9 +26,12 @@ pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> 
     Ok(())
 }
 
-fn parse_miri(command: &str) -> MiriRequest {
+fn parse_miri(command: &str, code: String) -> MiriRequest {
     let parts = command.split_whitespace();
-    let mut config = MiriRequest::default();
+    let mut config = MiriRequest {
+        code,
+        ..Default::default()
+    };
 
     for arg in parts {
         match arg.to_lowercase().as_str() {
