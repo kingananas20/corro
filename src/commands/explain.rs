@@ -1,4 +1,4 @@
-use crate::{Context, Error, common::split_content};
+use crate::{Context, Error, common::split_content, error::CommandError};
 use poise::{self, CreateReply, serenity_prelude::CreateEmbed};
 use std::{fs, str::FromStr};
 use strum::IntoEnumIterator;
@@ -9,21 +9,12 @@ pub async fn explain(
     ctx: Context<'_>,
     #[autocomplete = "autocomplete_rustc_error"] error_code: String,
 ) -> Result<(), Error> {
-    let error_code = match ErrorCodes::from_str(&error_code) {
-        Ok(variant) => variant,
-        Err(_) => {
-            ctx.send(
-                CreateReply::default()
-                    .content("Please pass in a valid error code.")
-                    .ephemeral(true),
-            )
-            .await?;
-            return Ok(());
-        }
+    let Ok(error_code) = ErrorCodes::from_str(&error_code) else {
+        return Err(Error::Command(CommandError::InvalidErrorCode(error_code)));
     };
 
     // Changed the remaining error_codes.md to custom ones currently at E0094
-    let content = fs::read_to_string(format!("error_codes/{}.md", error_code.as_ref()))?;
+    let content = fs::read_to_string(format!("assets/error_codes/{}.md", error_code.as_ref()))?;
     let content = split_content(content);
 
     for (i, msg) in content.iter().enumerate() {
@@ -54,7 +45,6 @@ async fn autocomplete_rustc_error(_ctx: Context<'_>, focused: &str) -> Vec<Strin
     Debug, Clone, Copy, PartialEq, Eq, strum::EnumIter, strum::AsRefStr, strum::EnumString,
 )]
 enum ErrorCodes {
-    E0000,
     E0001,
     E0002,
     E0004,

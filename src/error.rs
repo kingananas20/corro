@@ -5,6 +5,9 @@ use poise::FrameworkError;
 pub enum CommandError {
     #[error("")]
     NoCode,
+
+    #[error("")]
+    InvalidErrorCode(String),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -32,6 +35,13 @@ impl Error {
     fn user_message(&self) -> String {
         if let Error::CratesIO(crates_io_api::Error::NotFound(e)) = self {
             return format!("{}", e);
+        }
+
+        if let Error::Command(CommandError::InvalidErrorCode(e)) = self {
+            return format!(
+                "Invalid error code `{}`! Please pass in a correct error code.",
+                e
+            );
         }
 
         if let Error::Playground(playground_api::Error::NoSuccess(e)) = self {
