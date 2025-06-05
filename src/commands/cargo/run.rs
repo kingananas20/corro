@@ -4,7 +4,8 @@ use poise::{CreateReply, command};
 
 /// Runs code from a code block in the Rust playground and returns the output
 #[command(prefix_command)]
-pub async fn run(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+pub async fn run(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+    let input = input.unwrap_or("".to_owned());
     let parameters = match input.lines().next() {
         Some(line) if !line.trim_start().starts_with("```") => line,
         _ => "",

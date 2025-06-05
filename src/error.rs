@@ -31,6 +31,11 @@ pub enum Error {
     FilesystemIO(#[from] std::io::Error),
 }
 
+const NOCODEBLOCK: &str = r#"Please provide a code block with the following syntax:
+\`\`\`rust
+/* your rust code */
+\`\`\`"#;
+
 impl Error {
     fn user_message(&self) -> String {
         if let Error::CratesIO(crates_io_api::Error::NotFound(e)) = self {
@@ -38,11 +43,7 @@ impl Error {
         }
 
         if let Error::Command(CommandError::NoCodeBlock) = self {
-            return r#"Please provide a code block with the following syntax:
-\`\`\`rust
-/* your rust code */
-\`\`\`"#
-                .to_owned();
+            return NOCODEBLOCK.to_owned();
         }
 
         if let Error::Command(CommandError::InvalidErrorCode(e)) = self {

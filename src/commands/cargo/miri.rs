@@ -3,7 +3,8 @@ use playground_api::endpoints::{AliasingModel, Edition, MiriRequest};
 use poise::CreateReply;
 
 #[poise::command(prefix_command)]
-pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+pub async fn miri(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+    let input = input.unwrap_or("".to_owned());
     let parameters = match input.lines().next() {
         Some(line) if !line.trim_start().starts_with("```") => line,
         _ => "",

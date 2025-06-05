@@ -4,7 +4,8 @@ use poise::{CreateReply, command};
 
 /// Publish code in a code block to GitHub Gists
 #[command(prefix_command, guild_cooldown = 60)]
-pub async fn publish(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+    let input = input.unwrap_or("".to_owned());
     let code = crate::common::extract_code(&input)?;
     let res = ctx
         .data()
