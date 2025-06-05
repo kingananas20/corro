@@ -18,9 +18,13 @@ pub async fn run(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), 
     let content = if res.success { res.stdout } else { res.stderr };
     let content = limit_string(&content);
     let content = if !content.is_empty() {
-        format!("<@{}>```{}```", ctx.author().id, content)
+        format!(
+            "Running your code returned the following output <@{}>\n```{}```",
+            ctx.author().id,
+            content
+        )
     } else {
-        "Your code ran without output.".to_owned()
+        format!("Running your code gave no output <@{}>", ctx.author().id)
     };
 
     ctx.send(CreateReply::default().content(content)).await?;

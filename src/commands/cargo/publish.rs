@@ -14,8 +14,10 @@ pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<
         .await?;
 
     let content = format!(
-        "Done uploading your code to GitHub Gists [#{}](<{}>)",
-        res.id, res.url
+        "Your code was uploded to github gists <@{}> [#{}](<{}>)",
+        ctx.author().id,
+        res.id,
+        res.url
     );
     ctx.send(CreateReply::default().content(content)).await?;
 
