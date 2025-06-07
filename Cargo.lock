@@ -243,7 +243,6 @@ dependencies = [
  "chrono",
  "crates_io_api",
  "dotenv",
- "once_cell",
  "playground-api",
  "poise",
  "redis",

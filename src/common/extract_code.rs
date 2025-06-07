@@ -1,10 +1,10 @@
 use crate::error::CommandError;
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 // unsafe code because the bot is called corro
-static EX_RE: Lazy<Regex> =
-    Lazy::new(|| unsafe { Regex::new(r"(?s)```rust\n(.*?)```").unwrap_unchecked() });
+static EX_RE: LazyLock<Regex> =
+    LazyLock::new(|| unsafe { Regex::new(r"(?s)```rust\n(.*?)```").unwrap_unchecked() });
 
 pub fn extract_code(msg: &str) -> Result<String, CommandError> {
     let Some(cap) = EX_RE.captures(msg) else {
