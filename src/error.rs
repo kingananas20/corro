@@ -2,18 +2,6 @@ use crate::{Data, cache::CacheError};
 use poise::FrameworkError;
 
 #[derive(Debug, thiserror::Error)]
-pub enum CommandError {
-    #[error("")]
-    NoCodeBlock,
-
-    #[error("")]
-    InvalidErrorCode(String),
-
-    #[error("")]
-    InvalidId(String),
-}
-
-#[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("following command error occured (non critical): {0:?}")]
     Command(#[from] CommandError),
@@ -34,45 +22,52 @@ pub enum Error {
     FilesystemIO(#[from] std::io::Error),
 }
 
-const NOCODEBLOCK: &str = r#"Please provide a code block with the following syntax:
-\`\`\`rust
-/* your rust code */
-\`\`\`"#;
-
 impl Error {
     fn user_message(&self) -> String {
-        if let Error::CratesIO(crates_io_api::Error::NotFound(e)) = self {
-            return format!("Crate at url `{}` was not found!", e);
+        match self {
+            Error::Command(cmd_err) => cmd_err.user_message(),
+            Error::CratesIO(crates_io_api::Error::NotFound(url)) => {
+                format!("The crate at `{}` does not exist.", url)
+            }
+            _ => "Internal server error".to_owned(),
         }
-
-        if let Error::Command(CommandError::NoCodeBlock) = self {
-            return NOCODEBLOCK.to_owned();
-        }
-
-        if let Error::Command(CommandError::InvalidErrorCode(e)) = self {
-            return format!(
-                "Invalid error code `{}`! Please pass in a correct error code.",
-                e
-            );
-        }
-
-        if let Error::Playground(playground_api::Error::NoSuccess(e)) = self {
-            return format!("No success response from the playground! Error code: {}", e);
-        }
-
-        "Internal server error".to_owned()
     }
 
     fn should_log(&self) -> bool {
-        // !matches!(self, Error::Command(_))
+        // !matches!(self, Error::Command(_)) // disabled for debug purposes
         true
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CommandError {
+    #[error(
+        r#"Please provide a code block with the following syntax:
+\`\`\`rust
+/* your rust code */
+\`\`\`"#
+    )]
+    NoCodeBlock,
+
+    #[error("Invalid error code `{0}`! Please pass in a valid rustc error code.")]
+    InvalidErrorCode(String),
+
+    #[error(
+        "The ID `{0}` is invalid. Please provide a valid 32-byte hexadecimal GitHub Gist ID. Accepted formats include the raw ID, the full Gist URL, or the Gist embed snippet."
+    )]
+    InvalidId(String),
+}
+
+impl CommandError {
+    fn user_message(&self) -> String {
+        self.to_string()
     }
 }
 
 pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     if let FrameworkError::Command { error, ctx, .. } = error {
         if error.should_log() {
-            eprintln!("Error occured: {:#?}", error);
+            eprintln!("Error occured: {}", error);
         }
 
         let user_msg = error.user_message();
