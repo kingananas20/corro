@@ -1,11 +1,13 @@
 use crate::error::CommandError;
+use once_cell::sync::Lazy;
 use regex::Regex;
 
-pub fn extract_code(msg: &str) -> Result<String, CommandError> {
-    // unsafe code because the bot is called corro
-    let re = unsafe { Regex::new(r"(?s)```rust\n(.*?)```").unwrap_unchecked() };
+// unsafe code because the bot is called corro
+static EX_RE: Lazy<Regex> =
+    Lazy::new(|| unsafe { Regex::new(r"(?s)```rust\n(.*?)```").unwrap_unchecked() });
 
-    let Some(cap) = re.captures(msg) else {
+pub fn extract_code(msg: &str) -> Result<String, CommandError> {
+    let Some(cap) = EX_RE.captures(msg) else {
         return Err(CommandError::NoCodeBlock);
     };
 

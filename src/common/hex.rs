@@ -1,13 +1,9 @@
+use once_cell::sync::Lazy;
 use regex::Regex;
 
-#[allow(dead_code)]
-pub fn is_valid_hex128(input: &str) -> bool {
-    let re = unsafe { Regex::new(r"(?i)^[0-9a-f]{32}$").unwrap_unchecked() };
-    re.is_match(input)
-}
+static HEX_32_RE: Lazy<Regex> =
+    Lazy::new(|| unsafe { Regex::new(r"(?i)[0-9a-f]{32}").unwrap_unchecked() });
 
 pub fn extract_32byte_hex(input: &str) -> Option<String> {
-    let re = unsafe { Regex::new(r"(?i)[0-9a-f]{32}").unwrap_unchecked() };
-
-    re.find(input).map(|m| m.as_str().to_lowercase())
+    HEX_32_RE.find(input).map(|m| m.as_str().to_lowercase())
 }
