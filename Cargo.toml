@@ -10,7 +10,7 @@ path = "src/bin/main.rs"
 
 [dependencies]
 dotenv = "0.15.0"
-playground-api = { path = "../playground-api/", features = ["poise-bot"] }
+playground-api = { version = "0.3", features = ["poise-bot"] }
 poise = "0.6.1"
 regex = "1.11.1"
 strum = { version = "0.27.1", features = ["derive"] }
