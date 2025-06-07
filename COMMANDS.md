@@ -11,6 +11,7 @@
 - `/version` — Show toolchain version used (rustc, cargo).
 - `/explain <E####>` — Explain a Rust compiler error code.
 - `/crates` — Show the available crates to use when running code.
+- `/crate info <name>` — Get informations about a crate.
 
 ---
 

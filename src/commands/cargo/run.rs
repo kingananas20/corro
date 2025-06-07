@@ -1,10 +1,14 @@
-use crate::{Context, Error, common::limit_string};
+use crate::{
+    Context, Error,
+    common::{extract_32byte_hex, limit_string},
+    error::CommandError,
+};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
-use poise::{CreateReply, command};
+use poise::CreateReply;
 
 /// Runs code from a code block in the Rust playground and returns the output
-#[command(prefix_command)]
-pub async fn run(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+#[poise::command(prefix_command, slash_command, rename = "run", subcommands("run_gist"))]
+pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
     let input = input.unwrap_or("".to_owned());
     let parameters = match input.lines().next() {
         Some(line) if !line.trim_start().starts_with("```") => line,
@@ -29,7 +33,53 @@ pub async fn run(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), 
 
     ctx.send(CreateReply::default().content(content)).await?;
 
-    // Return Ok to signal successful command execution
+    Ok(())
+}
+
+/// Runs the code from a Github gist
+#[poise::command(slash_command, rename = "gist")]
+async fn run_gist(
+    ctx: Context<'_>,
+    #[description = "Id of the gist of which code you want to run. Only supports gists from the Rust Playground."]
+    id: String,
+) -> Result<(), Error> {
+    ctx.defer().await?;
+
+    let Some(id) = extract_32byte_hex(&id) else {
+        return Err(CommandError::InvalidId(id).into());
+    };
+
+    let db_id = format!("gist::{}", id);
+    let gist = match ctx.data().redis_client.get(&db_id).await {
+        Ok(Some(gist)) => gist,
+        Ok(None) => {
+            let gist = ctx.data().playground_client.gist_get(id).await?;
+            ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
+            gist
+        }
+        Err(e) => return Err(e.into()),
+    };
+
+    let req = ExecuteRequest {
+        code: gist.code,
+        ..Default::default()
+    };
+    let res = ctx.data().playground_client.execute(&req).await?;
+
+    let content = if res.success { res.stdout } else { res.stderr };
+    let content = limit_string(&content);
+    let content = if !content.is_empty() {
+        format!(
+            "Running your code returned the following output <@{}>\n```{}```",
+            ctx.author().id,
+            content
+        )
+    } else {
+        format!("Running your code gave no output <@{}>", ctx.author().id)
+    };
+
+    ctx.send(CreateReply::default().content(content)).await?;
+
     Ok(())
 }
 

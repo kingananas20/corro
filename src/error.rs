@@ -8,6 +8,9 @@ pub enum CommandError {
 
     #[error("")]
     InvalidErrorCode(String),
+
+    #[error("")]
+    InvalidId(String),
 }
 
 #[derive(Debug, thiserror::Error)]
