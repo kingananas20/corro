@@ -49,6 +49,9 @@ pub enum CommandError {
     )]
     NoCodeBlock,
 
+    #[error("Crate `{0}` does not exist!")]
+    CrateNotFound(String),
+
     #[error("Invalid error code `{0}`! Please pass in a valid rustc error code.")]
     InvalidErrorCode(String),
 

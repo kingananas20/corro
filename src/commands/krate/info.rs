@@ -1,5 +1,5 @@
 use super::CrateInfo;
-use crate::{Context, Error};
+use crate::{Context, Error, error::CommandError};
 use chrono::Utc;
 use poise::{
     CreateReply,
@@ -27,7 +27,15 @@ pub async fn info(
     let crate_info = match ctx.data().redis_client.get(&db_key).await {
         Ok(Some(crate_info)) => crate_info,
         Ok(None) => {
-            let res = ctx.data().crates_io_client.get_crate(&name).await?;
+            let res = ctx
+                .data()
+                .crates_io_client
+                .get_crate(&name)
+                .await
+                .map_err(|e| match e {
+                    crates_io_api::Error::NotFound(_) => CommandError::CrateNotFound(name).into(),
+                    other => Error::CratesIO(other),
+                })?;
             let crate_info = CrateInfo::new(res, Utc::now());
             ctx.data()
                 .redis_client
