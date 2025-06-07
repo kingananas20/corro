@@ -1,0 +1,38 @@
+name: Rust
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test on ubuntu x86 and arm64
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Build debug
+        run: cargo build --verbose
+
+      - name: Build release
+        run: cargo build --release --verbose
+        
+      - name: Run tests debug 
+        run: cargo test --verbose
+
+      - name: Run tests release
+        run: cargo test --release --verbose
