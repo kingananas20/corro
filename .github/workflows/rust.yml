@@ -10,7 +10,7 @@ env:
 
 jobs:
   test:
-    name: Test on ubuntu x86 and arm64
+    name: Test code
     runs-on: ubuntu-latest
 
     services:
