@@ -18,7 +18,11 @@ pub async fn info(
     ctx: Context<'_>,
     #[description = "The name of the crate for which you want information"] name: String,
 ) -> Result<(), Error> {
-    let name = name.to_lowercase();
+    let name = name
+        .trim()
+        .replace(" ", "-")
+        .replace("_", "-")
+        .to_lowercase();
     let db_key = format!("crate_info::{}", name);
     let crate_info = match ctx.data().redis_client.get(&db_key).await {
         Ok(Some(crate_info)) => crate_info,

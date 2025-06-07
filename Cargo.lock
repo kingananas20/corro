@@ -267,8 +267,7 @@ dependencies = [
 [[package]]
 name = "crates_io_api"
 version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "200ad30d24892baf2168f2df366939264d02f2fa0be0914f8e2da4bd3407c58c"
+source = "git+https://github.com/kingananas20/crates-io-api#d1d1a04520e3fc506c9ddb69ba0260ceeed3664d"
 dependencies = [
  "chrono",
  "futures",
@@ -277,6 +276,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serde_path_to_error",
+ "thiserror 2.0.12",
  "tokio",
  "url",
 ]

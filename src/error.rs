@@ -39,7 +39,7 @@ const NOCODEBLOCK: &str = r#"Please provide a code block with the following synt
 impl Error {
     fn user_message(&self) -> String {
         if let Error::CratesIO(crates_io_api::Error::NotFound(e)) = self {
-            return format!("{}", e);
+            return format!("Crate at url `{}` was not found!", e);
         }
 
         if let Error::Command(CommandError::NoCodeBlock) = self {
