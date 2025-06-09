@@ -104,20 +104,34 @@ async fn run_gist(
 }
 
 #[poise::command(slash_command, rename = "file")]
-async fn run_file(ctx: Context<'_>, file: Attachment) -> Result<(), Error> {
-    ctx.defer().await?;
-
+#[allow(clippy::too_many_arguments)]
+async fn run_file(
+    ctx: Context<'_>,
+    file: Attachment,
+    channel: Option<Channel>,
+    mode: Option<Mode>,
+    edition: Option<Edition>,
+    crate_type: Option<CrateType>,
+    tests: Option<bool>,
+    backtrace: Option<bool>,
+) -> Result<(), Error> {
     if !file.filename.ends_with(".rs") {
         return Err(CommandError::NotValidFile(file.filename).into());
     }
 
+    let channel = channel.unwrap_or(Channel::Stable);
+    let mode = mode.unwrap_or(Mode::Debug);
+    let edition = edition.unwrap_or(Edition::Edition2024);
+    let crate_type = crate_type.unwrap_or(CrateType::Binary);
+    let tests = tests.unwrap_or(false);
+    let backtrace = backtrace.unwrap_or(false);
+
+    ctx.defer().await?;
+
     let file_content = file.download().await?;
     let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
 
-    let req = ExecuteRequest {
-        code,
-        ..Default::default()
-    };
+    let req = ExecuteRequest::new(channel, mode, edition, crate_type, tests, backtrace, code);
     let res = ctx.data().playground_client.execute(&req).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
