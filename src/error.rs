@@ -59,6 +59,12 @@ pub enum CommandError {
         "The ID `{0}` is invalid. Please provide a valid 32-byte hexadecimal GitHub Gist ID. Accepted formats include the raw ID, the full Gist URL, or the Gist embed snippet."
     )]
     InvalidId(String),
+
+    #[error("`{0}` is not a valid filetype. Needs to be a `.rs` file.")]
+    NotValidFile(String),
+
+    #[error("The file doesn't contain valid UTF-8 characters")]
+    NotValidUTF8,
 }
 
 impl CommandError {

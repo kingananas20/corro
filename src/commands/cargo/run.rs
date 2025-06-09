@@ -4,10 +4,15 @@ use crate::{
     error::CommandError,
 };
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
-use poise::CreateReply;
+use poise::{CreateReply, serenity_prelude::Attachment};
 
 /// Runs code from a code block in the Rust playground and returns the output
-#[poise::command(prefix_command, slash_command, rename = "run", subcommands("run_gist"))]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    rename = "run",
+    subcommands("run_gist", "run_file")
+)]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
     let input = input.unwrap_or("".to_owned());
     let parameters = match input.lines().next() {
@@ -98,7 +103,43 @@ async fn run_gist(
     Ok(())
 }
 
-pub fn parse_run_command(command: &str, code: String) -> ExecuteRequest {
+#[poise::command(slash_command, rename = "file")]
+async fn run_file(ctx: Context<'_>, file: Attachment) -> Result<(), Error> {
+    ctx.defer().await?;
+
+    if !file.filename.ends_with(".rs") {
+        return Err(CommandError::NotValidFile(file.filename).into());
+    }
+
+    let file_content = file.download().await?;
+    let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
+
+    let req = ExecuteRequest {
+        code,
+        ..Default::default()
+    };
+    let res = ctx.data().playground_client.execute(&req).await?;
+
+    let content = if res.success { res.stdout } else { res.stderr };
+    let content = limit_string(&content);
+    let content = if !content.is_empty() {
+        format!(
+            "Running the code from [{}](<{}>) gave the following output\n```{}```",
+            file.filename, file.url, content
+        )
+    } else {
+        format!(
+            "Running the code from [{}](<{}>) gave no output",
+            file.filename, file.url
+        )
+    };
+
+    ctx.send(CreateReply::default().content(content)).await?;
+
+    Ok(())
+}
+
+fn parse_run_command(command: &str, code: String) -> ExecuteRequest {
     let parts = command.split_whitespace();
 
     let mut config = ExecuteRequest::default();
