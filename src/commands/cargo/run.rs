@@ -41,13 +41,12 @@ pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> 
     Ok(())
 }
 
-/// Runs the code from a Github gist
+/// Runs code from a Github gist
 #[poise::command(slash_command, rename = "gist")]
 #[allow(clippy::too_many_arguments)]
 async fn run_gist(
     ctx: Context<'_>,
-    #[description = "Id of the gist of which code you want to run. Only supports gists from the Rust Playground."]
-    id: String,
+    #[description = "Id of the gist of which code you want to run."] id: String,
     channel: Option<Channel>,
     mode: Option<Mode>,
     edition: Option<Edition>,
@@ -103,11 +102,12 @@ async fn run_gist(
     Ok(())
 }
 
+/// Run code from a rust file
 #[poise::command(slash_command, rename = "file")]
 #[allow(clippy::too_many_arguments)]
 async fn run_file(
     ctx: Context<'_>,
-    file: Attachment,
+    #[description = "Rust source file to run."] file: Attachment,
     channel: Option<Channel>,
     mode: Option<Mode>,
     edition: Option<Edition>,
