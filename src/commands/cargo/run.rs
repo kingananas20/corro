@@ -119,6 +119,10 @@ async fn run_file(
         return Err(CommandError::NotValidFile(file.filename).into());
     }
 
+    if file.size > ctx.data().max_code_size {
+        return Err(CommandError::CodeTooLong(file.size, ctx.data().max_code_size).into());
+    }
+
     let channel = channel.unwrap_or(Channel::Stable);
     let mode = mode.unwrap_or(Mode::Debug);
     let edition = edition.unwrap_or(Edition::Edition2024);

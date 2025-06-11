@@ -15,6 +15,7 @@ pub struct Data {
     pub playground_client: playground_api::Client,
     pub redis_client: cache::Client,
     pub crates_io_client: crates_io_api::AsyncClient,
+    pub max_code_size: u32,
 }
 
 impl Default for Data {
@@ -29,6 +30,7 @@ impl Default for Data {
                 std::time::Duration::from_millis(1000),
             )
             .expect("failed to create an AsyncClient"),
+            max_code_size: 64 * 1024,
         }
     }
 }

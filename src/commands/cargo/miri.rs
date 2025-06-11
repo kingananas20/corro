@@ -104,6 +104,10 @@ async fn miri_file(
         return Err(CommandError::NotValidFile(file.filename).into());
     }
 
+    if file.size > ctx.data().max_code_size {
+        return Err(CommandError::CodeTooLong(file.size, ctx.data().max_code_size).into());
+    }
+
     let edition = edition.unwrap_or(Edition::Edition2024);
     let tests = tests.unwrap_or(false);
 

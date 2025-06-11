@@ -65,6 +65,9 @@ pub enum CommandError {
 
     #[error("The file doesn't contain valid UTF-8 characters")]
     NotValidUTF8,
+
+    #[error("Your code is too large: **{0}** bytes. The maximum allowed size is **{1}** bytes.")]
+    CodeTooLong(u32, u32),
 }
 
 impl CommandError {
