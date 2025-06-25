@@ -20,6 +20,9 @@ pub enum Error {
 
     #[error("Error while accessing the filesystem: {0:?}")]
     FilesystemIO(#[from] std::io::Error),
+
+    #[error("Error while logging: {0:?}")]
+    Log(#[from] log::SetLoggerError),
 }
 
 impl Error {

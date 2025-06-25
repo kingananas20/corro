@@ -3,11 +3,8 @@ pub mod commands;
 mod common;
 mod error;
 
-pub use error::on_error;
-
-//pub type Error = Box<dyn std::error::Error + Send + Sync>;
-//pub type Error = error::Error;
 pub use error::Error;
+pub use error::on_error;
 
 pub type Context<'a> = poise::Context<'a, Data, Error>;
 
@@ -33,4 +30,56 @@ impl Default for Data {
             max_code_size: 64 * 1024,
         }
     }
+}
+
+// Set up logging
+use chrono::Local;
+use fern::Dispatch;
+use fern::colors::ColoredLevelConfig;
+use log::LevelFilter;
+
+pub fn setup_logging() -> Result<(), Box<Error>> {
+    let colors = ColoredLevelConfig::new()
+        .trace(fern::colors::Color::Magenta)
+        .debug(fern::colors::Color::BrightBlack)
+        .info(fern::colors::Color::Green)
+        .warn(fern::colors::Color::Yellow)
+        .error(fern::colors::Color::Red);
+
+    let config = Dispatch::new()
+        .level(LevelFilter::Warn)
+        .level_for("corro", LevelFilter::Debug);
+
+    let logger = if cfg!(debug_assertions) {
+        config
+            .format(move |out, message, record| {
+                out.finish(format_args!(
+                    "[{}][{}] {}",
+                    Local::now().format("%Y-%m-%d %H:%M:%S"),
+                    colors.color(record.level()),
+                    message,
+                ));
+            })
+            .chain(std::io::stdout())
+    } else {
+        let log_file = fern::log_file(format!(
+            "corro_{}",
+            Local::now().format("%Y-%m-%d_%H:%M:%S")
+        ))
+        .map_err(Error::FilesystemIO)?;
+        config
+            .format(|out, message, record| {
+                out.finish(format_args!(
+                    "[{}][{}] {}",
+                    Local::now().format("%Y-%m-%d %H:%M:%S"),
+                    record.level(),
+                    message,
+                ));
+            })
+            .chain(log_file)
+    };
+
+    logger.apply().map_err(Error::Log)?;
+
+    Ok(())
 }

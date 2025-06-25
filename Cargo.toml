@@ -22,3 +22,5 @@ crates_io_api = { git = "https://github.com/kingananas20/crates-io-api" }
 chrono = { version = "0.4.41", features = ["serde"] }
 thousands = "0.2.0"
 thiserror = "2.0.12"
+fern = { version = "0.7.1", features = ["colored"] }
+log = "0.4.27"
