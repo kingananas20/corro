@@ -3,6 +3,7 @@ use crate::{
     common::{extract_32byte_hex, limit_string},
     error::CommandError,
 };
+use log::{debug, info, trace};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, serenity_prelude::Attachment};
 
@@ -14,6 +15,7 @@ use poise::{CreateReply, serenity_prelude::Attachment};
     subcommands("run_gist", "run_file")
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+    info!("executing run_code_block...");
     let input = input.unwrap_or("".to_owned());
     let parameters = match input.lines().next() {
         Some(line) if !line.trim_start().starts_with("```") => line,
@@ -54,6 +56,7 @@ async fn run_gist(
     tests: Option<bool>,
     backtrace: Option<bool>,
 ) -> Result<(), Error> {
+    info!("executing run_gist...");
     let Some(id) = extract_32byte_hex(&id) else {
         return Err(CommandError::InvalidId(id).into());
     };
@@ -64,13 +67,19 @@ async fn run_gist(
     let crate_type = crate_type.unwrap_or(CrateType::Binary);
     let tests = tests.unwrap_or(false);
     let backtrace = backtrace.unwrap_or(false);
+    trace!(
+        "got these configs: {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
+        channel, mode, edition, crate_type, tests, backtrace
+    );
 
     ctx.defer().await?;
+    trace!("defering message");
 
     let db_id = format!("gist::{}", id);
     let gist = match ctx.data().redis_client.get(&db_id).await {
         Ok(Some(gist)) => gist,
         Ok(None) => {
+            info!("nothing stored in cache, fetching gist with ID: {}", id);
             let gist = ctx.data().playground_client.gist_get(id).await?;
             ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
             gist
@@ -115,6 +124,7 @@ async fn run_file(
     tests: Option<bool>,
     backtrace: Option<bool>,
 ) -> Result<(), Error> {
+    info!("executing run_file with file {}", file.filename);
     if !file.filename.ends_with(".rs") {
         return Err(CommandError::NotValidFile(file.filename).into());
     }
@@ -129,11 +139,16 @@ async fn run_file(
     let crate_type = crate_type.unwrap_or(CrateType::Binary);
     let tests = tests.unwrap_or(false);
     let backtrace = backtrace.unwrap_or(false);
+    debug!(
+        "got these configs: {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
+        channel, mode, edition, crate_type, tests, backtrace
+    );
 
     ctx.defer().await?;
 
     let file_content = file.download().await?;
     let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
+    debug!("got code: {}", code);
 
     let req = ExecuteRequest::new(channel, mode, edition, crate_type, tests, backtrace, code);
     let res = ctx.data().playground_client.execute(&req).await?;
@@ -181,6 +196,3 @@ fn parse_run_command(command: &str, code: String) -> ExecuteRequest {
     config.code = code.to_owned();
     config
 }
-
-#[cfg(test)]
-mod tests {}
