@@ -1,6 +1,6 @@
 services:
   bot: 
-    image: corro
+    image: kingananas20/corro
     container_name: corro
     env_file:
       - .env
