@@ -12,6 +12,8 @@ jobs:
   test:
     name: Test code
     runs-on: ubuntu-latest
+    env: 
+      REDIS: "redis://127.0.0.1:6379/"
 
     services:
       redis:
