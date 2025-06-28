@@ -15,7 +15,7 @@ pub fn split_content(content: String) -> Vec<String> {
             end = (start + EMBED_DESCRIPTION_SIZE).min(content.len());
         }
 
-        println!("{}, {}", start, end);
+        println!("{start}, {end}");
 
         result.push(content[start..end].to_string());
         start = end;

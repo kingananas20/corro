@@ -23,7 +23,7 @@ pub async fn info(
         .replace(" ", "-")
         .replace("_", "-")
         .to_lowercase();
-    let db_key = format!("crate_info::{}", name);
+    let db_key = format!("crate_info::{name}");
     let crate_info = match ctx.data().redis_client.get(&db_key).await {
         Ok(Some(crate_info)) => crate_info,
         Ok(None) => {
@@ -98,7 +98,7 @@ pub async fn info(
     if let Some(keywords) = crate_data.keywords {
         let mut keyword_str = String::new();
         for keyword in keywords {
-            keyword_str += &format!("`{}` ", keyword);
+            keyword_str += &format!("`{keyword}` ");
         }
         embed = embed.field("Keywords", keyword_str, true);
     }
@@ -106,7 +106,7 @@ pub async fn info(
     if let Some(categories) = crate_data.categories {
         let mut categories_str = String::new();
         for category in categories {
-            categories_str += &format!("`{}` ", category);
+            categories_str += &format!("`{category}` ");
         }
         embed = embed.field("Categories", categories_str, true);
     }

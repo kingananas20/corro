@@ -23,7 +23,7 @@ impl Default for Data {
             playground_client: playground_api::Client::default(),
             redis_client: cache::Client::default(),
             crates_io_client: crates_io_api::AsyncClient::new(
-                &format!("cargo-discord-bot ({})", email),
+                &format!("corro-discord-bot ({email})"),
                 std::time::Duration::from_millis(1000),
             )
             .expect("failed to create an AsyncClient"),
@@ -46,11 +46,17 @@ pub fn setup_logging() -> Result<(), Box<Error>> {
         .warn(fern::colors::Color::Yellow)
         .error(fern::colors::Color::Red);
 
-    let config = Dispatch::new()
+    let is_debug = cfg!(debug_assertions);
+
+    let mut config = Dispatch::new()
         .level(LevelFilter::Warn)
         .level_for("corro", LevelFilter::Debug);
 
-    let logger = if cfg!(debug_assertions) {
+    if !is_debug {
+        config = config.level_for("corro", LevelFilter::Info);
+    }
+
+    let logger = if is_debug {
         config
             .format(move |out, message, record| {
                 out.finish(format_args!(

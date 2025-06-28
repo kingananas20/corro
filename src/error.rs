@@ -31,7 +31,7 @@ impl Error {
         match self {
             Error::Command(cmd_err) => cmd_err.user_message(),
             Error::CratesIO(crates_io_api::Error::NotFound(url)) => {
-                format!("The crate at `{}` does not exist.", url)
+                format!("The crate at `{url}` does not exist.")
             }
             _ => "Internal server error".to_owned(),
         }
@@ -77,7 +77,7 @@ impl CommandError {
 
 pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     if let FrameworkError::Command { error, ctx, .. } = error {
-        warn!("Error occured: {}", error);
+        warn!("Error occured: {error}");
 
         let user_msg = error.user_message();
         let _ = ctx.say(user_msg).await;

@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<Error>> {
 
     let mut owners = HashSet::new();
     owners.insert(UserId::new(863480661007138858));
-    debug!("Set owners: {:?}", owners);
+    debug!("Set owners: {owners:?}");
 
     // Configure Poise framework options, including prefix settings and commands
     let options = FrameworkOptions {

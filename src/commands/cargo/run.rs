@@ -3,7 +3,7 @@ use crate::{
     common::{extract_32byte_hex, limit_string},
     error::CommandError,
 };
-use log::{debug, info, trace};
+use log::{debug, info};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, serenity_prelude::Attachment};
 
@@ -67,19 +67,17 @@ async fn run_gist(
     let crate_type = crate_type.unwrap_or(CrateType::Binary);
     let tests = tests.unwrap_or(false);
     let backtrace = backtrace.unwrap_or(false);
-    trace!(
-        "got these configs: {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
-        channel, mode, edition, crate_type, tests, backtrace
+    debug!(
+        "got these configs: {channel:?}, {mode:?}, {edition:?}, {crate_type:?}, {tests:?}, {backtrace:?}"
     );
 
     ctx.defer().await?;
-    trace!("defering message");
 
-    let db_id = format!("gist::{}", id);
+    let db_id = format!("gist::{id}");
     let gist = match ctx.data().redis_client.get(&db_id).await {
         Ok(Some(gist)) => gist,
         Ok(None) => {
-            info!("nothing stored in cache, fetching gist with ID: {}", id);
+            debug!("nothing stored in cache, fetching gist with ID: {id}");
             let gist = ctx.data().playground_client.gist_get(id).await?;
             ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
             gist
@@ -140,15 +138,14 @@ async fn run_file(
     let tests = tests.unwrap_or(false);
     let backtrace = backtrace.unwrap_or(false);
     debug!(
-        "got these configs: {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
-        channel, mode, edition, crate_type, tests, backtrace
+        "got these configs: {channel:?}, {mode:?}, {edition:?}, {crate_type:?}, {tests:?}, {backtrace:?}"
     );
 
     ctx.defer().await?;
 
     let file_content = file.download().await?;
     let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
-    debug!("got code: {}", code);
+    debug!("got code: {code}");
 
     let req = ExecuteRequest::new(channel, mode, edition, crate_type, tests, backtrace, code);
     let res = ctx.data().playground_client.execute(&req).await?;

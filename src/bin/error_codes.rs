@@ -91,11 +91,11 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let file = "E0801";
 
-    let content = fs::read_to_string(format!("error_codes/{}.md", file))?;
+    let content = fs::read_to_string(format!("error_codes/{file}.md"))?;
 
     let transformed = transform_text_general(&content);
 
-    fs::write(format!("error_codes/{}_transformed.md", file), transformed)?;
+    fs::write(format!("error_codes/{file}_transformed.md"), transformed)?;
 
     Ok(())
 }

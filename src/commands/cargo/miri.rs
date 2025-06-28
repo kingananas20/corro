@@ -57,7 +57,7 @@ async fn miri_gist(
 
     ctx.defer().await?;
 
-    let db_id = format!("gist::{}", id);
+    let db_id = format!("gist::{id}");
     let gist = match ctx.data().redis_client.get(&db_id).await {
         Ok(Some(gist)) => gist,
         Ok(None) => {

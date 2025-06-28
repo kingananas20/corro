@@ -24,7 +24,7 @@ pub async fn crates(
         ctx.send(
             CreateReply::default()
                 .ephemeral(true)
-                .content(format!("Page out of range (max {})", total_pages)),
+                .content(format!("Page out of range (max {total_pages})")),
         )
         .await?;
         return Ok(());
@@ -35,7 +35,7 @@ pub async fn crates(
     let chunk = &crates.crates[start..end];
 
     let mut embed = CreateEmbed::new()
-        .title(format!("Crates ({}/{})", page, total_pages))
+        .title(format!("Crates ({page}/{total_pages})"))
         .color(0xCC5500);
 
     for krate in chunk.iter() {
