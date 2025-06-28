@@ -28,11 +28,18 @@ pub enum Error {
 
 impl Error {
     fn user_message(&self) -> String {
+        use poise::serenity_prelude::ModelError;
         match self {
             Error::Command(cmd_err) => cmd_err.user_message(),
             Error::CratesIO(crates_io_api::Error::NotFound(url)) => {
                 format!("The crate at `{url}` does not exist.")
             }
+            Error::Poise(poise::serenity_prelude::Error::Model(e)) => match e {
+                ModelError::MessageTooLong(length) => {
+                    format!("Message is {length} bytes too large")
+                }
+                _ => "Poise model error".to_owned(),
+            },
             _ => "Internal server error".to_owned(),
         }
     }
