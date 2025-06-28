@@ -16,29 +16,32 @@ use poise::{CreateReply, serenity_prelude::Attachment};
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
     info!("executing run_code_block...");
-    let input = input.unwrap_or("".to_owned());
-    let parameters = match input.lines().next() {
-        Some(line) if !line.trim_start().starts_with("```") => line,
-        _ => "",
-    };
-    let code = crate::common::extract_code(&input)?;
+    let input = input.unwrap_or_default();
+    let parameters = input
+        .lines()
+        .next()
+        .filter(|line| !line.trim_start().starts_with("```"))
+        .unwrap_or_default();
 
+    let code = crate::common::extract_code(&input)?;
     let req = parse_run_command(parameters, code);
     let res = ctx.data().playground_client.execute(&req).await?;
 
-    let content = if res.success { res.stdout } else { res.stderr };
-    let content = limit_string(&content);
-    let content = if !content.is_empty() {
+    let content = limit_string(if res.success {
+        &res.stdout
+    } else {
+        &res.stderr
+    });
+    let reply = if !content.is_empty() {
         format!(
-            "Running your code returned the following output <@{}>\n```{}```",
-            ctx.author().id,
-            content
+            "Running your code returned the following output <@{}>\n```{content}```",
+            ctx.author().id
         )
     } else {
         format!("Running your code gave no output <@{}>", ctx.author().id)
     };
 
-    ctx.send(CreateReply::default().content(content)).await?;
+    ctx.send(CreateReply::default().content(reply)).await?;
 
     Ok(())
 }
@@ -56,20 +59,22 @@ async fn run_gist(
     tests: Option<bool>,
     backtrace: Option<bool>,
 ) -> Result<(), Error> {
-    info!("executing run_gist...");
+    info!("executing cargo run gist");
+
     let Some(id) = extract_32byte_hex(&id) else {
         return Err(CommandError::InvalidId(id).into());
     };
 
-    let channel = channel.unwrap_or(Channel::Stable);
-    let mode = mode.unwrap_or(Mode::Debug);
-    let edition = edition.unwrap_or(Edition::Edition2024);
-    let crate_type = crate_type.unwrap_or(CrateType::Binary);
-    let tests = tests.unwrap_or(false);
-    let backtrace = backtrace.unwrap_or(false);
-    debug!(
-        "got these configs: {channel:?}, {mode:?}, {edition:?}, {crate_type:?}, {tests:?}, {backtrace:?}"
+    let config = ExecuteRequest::new(
+        channel.unwrap_or(Channel::Stable),
+        mode.unwrap_or(Mode::Debug),
+        edition.unwrap_or(Edition::Edition2024),
+        crate_type.unwrap_or(CrateType::Binary),
+        tests.unwrap_or(false),
+        backtrace.unwrap_or(false),
+        String::new(),
     );
+    debug!("got config: {config:?}");
 
     ctx.defer().await?;
 
@@ -77,7 +82,7 @@ async fn run_gist(
     let gist = match ctx.data().redis_client.get(&db_id).await {
         Ok(Some(gist)) => gist,
         Ok(None) => {
-            debug!("nothing stored in cache, fetching gist with ID: {id}");
+            debug!("cache miss, fetching gist: {id}");
             let gist = ctx.data().playground_client.gist_get(id).await?;
             ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
             gist
@@ -85,17 +90,21 @@ async fn run_gist(
         Err(e) => return Err(e.into()),
     };
 
-    let req = ExecuteRequest::new(
-        channel, mode, edition, crate_type, tests, backtrace, gist.code,
-    );
+    let req = ExecuteRequest {
+        code: gist.code,
+        ..config
+    };
     let res = ctx.data().playground_client.execute(&req).await?;
+    let content = limit_string(if res.success {
+        &res.stdout
+    } else {
+        &res.stderr
+    });
 
-    let content = if res.success { res.stdout } else { res.stderr };
-    let content = limit_string(&content);
-    let content = if !content.is_empty() {
+    let reply = if !content.is_empty() {
         format!(
-            "Running the code from [#{}](<{}>) gave the following output\n```{}```",
-            gist.id, gist.url, content
+            "Running the code from [#{}](<{}>) gave the following output\n```{content}```",
+            gist.id, gist.url
         )
     } else {
         format!(
@@ -104,12 +113,12 @@ async fn run_gist(
         )
     };
 
-    ctx.send(CreateReply::default().content(content)).await?;
+    ctx.send(CreateReply::default().content(reply)).await?;
 
     Ok(())
 }
 
-/// Run code from a rust file
+/// Runs code from a Rust source file upload
 #[poise::command(slash_command, rename = "file")]
 #[allow(clippy::too_many_arguments)]
 async fn run_file(
@@ -122,7 +131,8 @@ async fn run_file(
     tests: Option<bool>,
     backtrace: Option<bool>,
 ) -> Result<(), Error> {
-    info!("executing run_file with file {}", file.filename);
+    info!("executing cargo run file {}", file.filename);
+
     if !file.filename.ends_with(".rs") {
         return Err(CommandError::NotValidFile(file.filename).into());
     }
@@ -131,31 +141,34 @@ async fn run_file(
         return Err(CommandError::CodeTooLong(file.size, ctx.data().max_code_size).into());
     }
 
-    let channel = channel.unwrap_or(Channel::Stable);
-    let mode = mode.unwrap_or(Mode::Debug);
-    let edition = edition.unwrap_or(Edition::Edition2024);
-    let crate_type = crate_type.unwrap_or(CrateType::Binary);
-    let tests = tests.unwrap_or(false);
-    let backtrace = backtrace.unwrap_or(false);
-    debug!(
-        "got these configs: {channel:?}, {mode:?}, {edition:?}, {crate_type:?}, {tests:?}, {backtrace:?}"
+    let config = ExecuteRequest::new(
+        channel.unwrap_or(Channel::Stable),
+        mode.unwrap_or(Mode::Debug),
+        edition.unwrap_or(Edition::Edition2024),
+        crate_type.unwrap_or(CrateType::Binary),
+        tests.unwrap_or(false),
+        backtrace.unwrap_or(false),
+        String::new(),
     );
+    debug!("got config: {config:?}");
 
     ctx.defer().await?;
 
     let file_content = file.download().await?;
     let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
-    debug!("got code: {code}");
 
-    let req = ExecuteRequest::new(channel, mode, edition, crate_type, tests, backtrace, code);
+    let req = ExecuteRequest { code, ..config };
     let res = ctx.data().playground_client.execute(&req).await?;
+    let content = limit_string(if res.success {
+        &res.stdout
+    } else {
+        &res.stderr
+    });
 
-    let content = if res.success { res.stdout } else { res.stderr };
-    let content = limit_string(&content);
-    let content = if !content.is_empty() {
+    let reply = if !content.is_empty() {
         format!(
-            "Running the code from [{}](<{}>) gave the following output\n```{}```",
-            file.filename, file.url, content
+            "Running the code from [{}](<{}>) gave the following output\n```{content}```",
+            file.filename, file.url
         )
     } else {
         format!(
@@ -164,7 +177,7 @@ async fn run_file(
         )
     };
 
-    ctx.send(CreateReply::default().content(content)).await?;
+    ctx.send(CreateReply::default().content(reply)).await?;
 
     Ok(())
 }
