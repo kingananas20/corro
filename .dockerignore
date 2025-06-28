@@ -1,0 +1,7 @@
+target/
+.git/
+.gitignore
+Dockerfile
+COMMANDS.md
+.github/
+.env

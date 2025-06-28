@@ -1,0 +1,26 @@
+services:
+  bot: 
+    image: corro
+    container_name: corro
+    env_file:
+      - .env
+    environment:
+      - REDIS=redis://redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: true
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --cleanup --label-enable --pull

@@ -1,0 +1,13 @@
+name: Build and push Docker Image
+
+on:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up docker Build

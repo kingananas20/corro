@@ -40,8 +40,9 @@ impl Client {
 
 impl Default for Client {
     fn default() -> Self {
+        let redis_url = std::env::var("REDIS").expect("Need to specify REDIS with the REDIS_URL");
         Self {
-            redis_client: redis::Client::open("redis://127.0.0.1/").unwrap(),
+            redis_client: redis::Client::open(redis_url).unwrap(),
         }
     }
 }
