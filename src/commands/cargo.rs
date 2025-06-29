@@ -2,6 +2,7 @@ mod publish;
 use publish::publish;
 
 mod run;
+pub use run::run_alias;
 use run::run_code_block;
 
 mod miri;

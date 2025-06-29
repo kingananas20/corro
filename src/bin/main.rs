@@ -33,6 +33,7 @@ async fn main() -> Result<(), Box<Error>> {
         commands: vec![
             register(),
             commands::cargo(),
+            commands::run_alias(),
             commands::version(),
             commands::explain(),
             commands::crates(),

@@ -15,6 +15,16 @@ use poise::{CreateReply, serenity_prelude::Attachment};
     subcommands("run_gist", "run_file")
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+    run_code_block_logic(ctx, input).await
+}
+
+/// Runs code from a code block in the Rust playground and returns the output
+#[poise::command(prefix_command, rename = "run")]
+pub async fn run_alias(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
+    run_code_block_logic(ctx, input).await
+}
+
+async fn run_code_block_logic(ctx: Context<'_>, input: Option<String>) -> Result<(), Error> {
     info!("executing run_code_block...");
     let input = input.unwrap_or_default();
     let parameters = input
