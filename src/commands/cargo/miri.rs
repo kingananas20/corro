@@ -19,7 +19,7 @@ pub async fn miri(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(),
     let res = ctx.data().playground_client.miri(&req).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
-    let content = limit_string(&content);
+    let content = limit_string(&content, 50, 2000);
     let content = if !content.is_empty() {
         format!(
             "Running your code with miri returned the following output <@{}>\n```{}```",
@@ -72,7 +72,7 @@ async fn miri_gist(
     let res = ctx.data().playground_client.miri(&req).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
-    let content = limit_string(&content);
+    let content = limit_string(&content, 50, 2000);
     let content = if !content.is_empty() {
         format!(
             "Running the code from [#{}](<{}>) gave the following output\n```{}```",
@@ -120,7 +120,7 @@ async fn miri_file(
     let res = ctx.data().playground_client.miri(&req).await?;
 
     let content = if res.success { res.stdout } else { res.stderr };
-    let content = limit_string(&content);
+    let content = limit_string(&content, 50, 2000);
     let content = if !content.is_empty() {
         format!(
             "Running the code from [{}](<{}>) gave the following output\n```{}```",

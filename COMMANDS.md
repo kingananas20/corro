@@ -7,6 +7,7 @@
   prefix = `!`
 
 - `<prefix>cargo run` — Run Rust code.
+- `<prefix>run` — Does the same as above.
 - `<prefix>cargo publish` — Upload code to GitHub Gist.
 - `/version` — Show toolchain version used (rustc, cargo).
 - `/explain <E####>` — Explain a Rust compiler error code.
@@ -47,9 +48,6 @@
 ---
 
 ## 🔍 Metadata & Tooling
-
-- `<prefix>crate <name>` — Fetch crate info from crates.io.
-- `<prefix>features <crate>` — Show optional features of a crate. // maybe
 
 ---
 

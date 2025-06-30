@@ -37,11 +37,15 @@ async fn run_code_block_logic(ctx: Context<'_>, input: Option<String>) -> Result
     let req = parse_run_command(parameters, code);
     let res = ctx.data().playground_client.execute(&req).await?;
 
-    let content = limit_string(if res.success {
-        &res.stdout
-    } else {
-        &res.stderr
-    });
+    let content = limit_string(
+        if res.success {
+            &res.stdout
+        } else {
+            &res.stderr
+        },
+        50,
+        2000,
+    );
     let reply = if !content.is_empty() {
         format!(
             "Running your code returned the following output <@{}>\n```{content}```",
@@ -105,11 +109,15 @@ async fn run_gist(
         ..config
     };
     let res = ctx.data().playground_client.execute(&req).await?;
-    let content = limit_string(if res.success {
-        &res.stdout
-    } else {
-        &res.stderr
-    });
+    let content = limit_string(
+        if res.success {
+            &res.stdout
+        } else {
+            &res.stderr
+        },
+        50,
+        2000,
+    );
 
     let reply = if !content.is_empty() {
         format!(
@@ -169,11 +177,15 @@ async fn run_file(
 
     let req = ExecuteRequest { code, ..config };
     let res = ctx.data().playground_client.execute(&req).await?;
-    let content = limit_string(if res.success {
-        &res.stdout
-    } else {
-        &res.stderr
-    });
+    let content = limit_string(
+        if res.success {
+            &res.stdout
+        } else {
+            &res.stderr
+        },
+        50,
+        2000,
+    );
 
     let reply = if !content.is_empty() {
         format!(
