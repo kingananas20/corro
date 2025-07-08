@@ -38,6 +38,7 @@ async fn main() -> Result<(), Box<Error>> {
             commands::explain(),
             commands::crates(),
             commands::krate(),
+            commands::docs(),
         ],
         owners,
         on_error: |err| Box::pin(on_error(err)),

@@ -13,11 +13,35 @@ pub struct Data {
     pub redis_client: cache::Client,
     pub crates_io_client: crates_io_api::AsyncClient,
     pub max_code_size: u32,
+    pub std: Doc<Indexed>,
+    pub core: Doc<Indexed>,
+    pub alloc: Doc<Indexed>,
 }
 
 impl Default for Data {
     fn default() -> Self {
         let email = std::env::var("EMAIL").expect("no email specified in the environment");
+
+        info!("reading, parsing and building searchindex for std.json");
+        let mut std = Doc::from_json("./assets/docs/std.json")
+            .unwrap()
+            .parse()
+            .unwrap();
+        std.build_search_index();
+
+        info!("reading, parsing and building searchindex for core.json");
+        let mut core = Doc::from_json("./assets/docs/core.json")
+            .unwrap()
+            .parse()
+            .unwrap();
+        core.build_search_index();
+
+        info!("reading, parsing and building searchindex for alloc.json");
+        let mut alloc = Doc::from_json("./assets/docs/alloc.json")
+            .unwrap()
+            .parse()
+            .unwrap();
+        alloc.build_search_index();
 
         Self {
             playground_client: playground_api::Client::default(),
@@ -28,6 +52,9 @@ impl Default for Data {
             )
             .expect("failed to create an AsyncClient"),
             max_code_size: 64 * 1024,
+            std,
+            core,
+            alloc,
         }
     }
 }
@@ -36,7 +63,10 @@ impl Default for Data {
 use chrono::Local;
 use fern::Dispatch;
 use fern::colors::ColoredLevelConfig;
+use fuzzdoc::Doc;
+use fuzzdoc::Indexed;
 use log::LevelFilter;
+use log::info;
 
 pub fn setup_logging() -> Result<(), Box<Error>> {
     let colors = ColoredLevelConfig::new()
