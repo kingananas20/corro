@@ -1,4 +1,5 @@
 use crate::{Context, Error, error::CommandError};
+use docsrs::Item;
 use poise::{CreateReply, serenity_prelude::CreateEmbed};
 
 #[poise::command(slash_command)]
@@ -17,9 +18,19 @@ pub async fn docs(
         return Err(CommandError::NoMatch(query).into());
     };
 
-    let item = item[0];
+    let item = item[0].clone();
+    let Item { name, docs, .. } = item;
 
-    let embed = CreateEmbed::new().title(item.name.as_deref().unwrap_or_default());
+    let mut embed = CreateEmbed::new()
+        .title(name)
+        .description(docs.unwrap_or_default());
+
+    let color = match source {
+        Krate::Std => 0x1E88E5,
+        Krate::Alloc => 0x8E24AA,
+        Krate::Core => 0xF4511E,
+    };
+    embed = embed.color(color);
 
     ctx.send(CreateReply::default().embed(embed)).await?;
 

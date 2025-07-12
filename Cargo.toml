@@ -24,4 +24,4 @@ thousands = "0.2.0"
 thiserror = "2.0.12"
 fern = { version = "0.7.1", features = ["colored"] }
 log = "0.4.27"
-fuzzdoc = { path = "../docz", features = ["fetch"] }
+docsrs = "0.1.4"

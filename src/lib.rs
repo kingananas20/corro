@@ -3,6 +3,8 @@ pub mod commands;
 mod common;
 mod error;
 
+use docsrs::Doc;
+use docsrs::Indexed;
 pub use error::Error;
 pub use error::on_error;
 
@@ -23,25 +25,25 @@ impl Default for Data {
         let email = std::env::var("EMAIL").expect("no email specified in the environment");
 
         info!("reading, parsing and building searchindex for std.json");
-        let mut std = Doc::from_json("./assets/docs/std.json")
+        let std = Doc::from_json("./assets/docs/std.json")
             .unwrap()
             .parse()
-            .unwrap();
-        std.build_search_index();
+            .unwrap()
+            .build_search_index();
 
         info!("reading, parsing and building searchindex for core.json");
-        let mut core = Doc::from_json("./assets/docs/core.json")
+        let core = Doc::from_json("./assets/docs/core.json")
             .unwrap()
             .parse()
-            .unwrap();
-        core.build_search_index();
+            .unwrap()
+            .build_search_index();
 
         info!("reading, parsing and building searchindex for alloc.json");
-        let mut alloc = Doc::from_json("./assets/docs/alloc.json")
+        let alloc = Doc::from_json("./assets/docs/alloc.json")
             .unwrap()
             .parse()
-            .unwrap();
-        alloc.build_search_index();
+            .unwrap()
+            .build_search_index();
 
         Self {
             playground_client: playground_api::Client::default(),
@@ -63,8 +65,6 @@ impl Default for Data {
 use chrono::Local;
 use fern::Dispatch;
 use fern::colors::ColoredLevelConfig;
-use fuzzdoc::Doc;
-use fuzzdoc::Indexed;
 use log::LevelFilter;
 use log::info;
 
