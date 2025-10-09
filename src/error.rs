@@ -87,7 +87,7 @@ impl CommandError {
 
 pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     if let FrameworkError::Command { error, ctx, .. } = error {
-        warn!("Error occured: {error}");
+        warn!("{error}");
 
         let user_msg = error.user_message();
         let _ = ctx.say(user_msg).await;
