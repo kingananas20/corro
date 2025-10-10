@@ -6,11 +6,11 @@ use poise::{
 
 #[poise::command(slash_command)]
 pub async fn docs(
-    ctx: Context<'_>,
-    #[description = "Choose crate"] source: Krate,
+    _ctx: Context<'_>,
+    #[description = "Choose crate"] _source: Krate,
     #[description = "Search query"]
     #[autocomplete = "autocomplete_item"]
-    item: u32,
+    _item: u32,
 ) -> Result<(), Error> {
     /*let item = match source {
         Krate::Std => ctx.data().std.0.items.get(item),
