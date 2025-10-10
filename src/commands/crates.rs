@@ -5,7 +5,7 @@ use poise::{CreateReply, serenity_prelude::CreateEmbed};
 #[poise::command(slash_command)]
 pub async fn crates(
     ctx: Context<'_>,
-    #[description = "Which page (25 per page)?"] page: Option<usize>,
+    #[description = "Which page (24 per page)?"] page: Option<usize>,
 ) -> Result<(), Error> {
     let crates = match ctx.data().redis_client.get("crates").await {
         Ok(Some(crates)) => crates,

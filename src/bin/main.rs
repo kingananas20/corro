@@ -36,6 +36,7 @@ async fn main() -> Result<(), Box<Error>> {
             commands::run_alias(),
             commands::version(),
             commands::explain(),
+            commands::reload_errors(),
             commands::crates(),
             commands::krate(),
             commands::docs(),
