@@ -179,7 +179,8 @@ async fn execute_and_respond(
     let code_block = format!("```text\n{out}\n```");
 
     let reply = format!("{header}\n{code_block}");
-    ctx.send(CreateReply::default().content(reply)).await?;
+    ctx.send(CreateReply::default().content(reply).reply(true))
+        .await?;
 
     Ok(())
 }
