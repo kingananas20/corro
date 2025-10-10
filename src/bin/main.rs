@@ -1,33 +1,26 @@
-use corro::{Context, Data, Error, commands, on_error, setup_logging};
+use corro::{Context, Data, Error, commands, on_error, parse_config, setup_logging};
 use dotenv::dotenv;
 use log::{debug, info};
 use poise::{
     Framework, FrameworkOptions,
-    serenity_prelude::{self as serenity, UserId},
+    serenity_prelude::{self as serenity},
 };
-use std::{collections::HashSet, env};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<Error>> {
     dotenv().ok();
+    let config = parse_config();
     setup_logging()?;
-    debug!("Logger initialized");
-
-    let token = env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
-    debug!("Loaded DISCORD_TOKEN from env");
+    info!("Config parsed and logging initialized");
 
     info!("Configuring bot...");
     let intents =
         serenity::GatewayIntents::GUILD_MESSAGES | serenity::GatewayIntents::MESSAGE_CONTENT;
 
-    let mut owners = HashSet::new();
-    owners.insert(UserId::new(863480661007138858));
-    debug!("Set owners: {owners:?}");
-
     // Configure Poise framework options, including prefix settings and commands
     let options = FrameworkOptions {
         prefix_options: poise::PrefixFrameworkOptions {
-            prefix: Some("!".into()),
+            prefix: Some(config.prefix),
             ..Default::default()
         },
         commands: vec![
@@ -39,7 +32,7 @@ async fn main() -> Result<(), Box<Error>> {
             commands::krate(),
             commands::docs(),
         ],
-        owners,
+        owners: config.owners,
         on_error: |err| Box::pin(on_error(err)),
         ..Default::default()
     };
@@ -58,7 +51,7 @@ async fn main() -> Result<(), Box<Error>> {
     debug!("Build the framework");
 
     // Build the discord bot client
-    let mut client = serenity::ClientBuilder::new(token, intents)
+    let mut client = serenity::ClientBuilder::new(config.discord_token, intents)
         .framework(framework)
         .await
         .map_err(Error::Poise)?;

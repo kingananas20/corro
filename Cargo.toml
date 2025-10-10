@@ -25,3 +25,5 @@ thiserror = "2.0.12"
 fern = { version = "0.7.1", features = ["colored"] }
 log = "0.4.27"
 docsrs = "0.1.4"
+konfik = "0.2.1"
+clap = { version = "4.5.48", features = ["derive"] }
