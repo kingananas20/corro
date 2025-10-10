@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<Error>> {
         .setup(|_ctx, ready, _framework| {
             Box::pin(async move {
                 info!("{} is connected!", ready.user.name);
-                Ok(Data::default())
+                Ok(Data::new(&config.email, &config.redis_url, 1024 * 64))
             })
         })
         .build();

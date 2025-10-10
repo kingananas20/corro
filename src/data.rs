@@ -12,11 +12,8 @@ pub struct Data {
     pub alloc: Doc<Indexed>,
 }
 
-impl Default for Data {
-    fn default() -> Self {
-        let email = std::env::var("EMAIL").expect("no email specified in the environment");
-        let redis_url = std::env::var("REDIS_URL").expect("no redis_url specified");
-
+impl Data {
+    pub fn new(email: &str, redis_url: &str, max_code_size: u32) -> Self {
         info!("reading, parsing and building searchindex for std.json");
         let std = Doc::from_json("./assets/docs/std.json")
             .unwrap()
@@ -46,7 +43,7 @@ impl Default for Data {
                 std::time::Duration::from_millis(1000),
             )
             .expect("failed to create an AsyncClient"),
-            max_code_size: 64 * 1024,
+            max_code_size,
             std,
             core,
             alloc,
