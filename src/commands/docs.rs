@@ -1,12 +1,7 @@
-use std::str::FromStr;
-
-use crate::{Context, Data, Error, error::CommandError};
-use docsrs::Indexed;
-use docsrs::Item;
-use log::debug;
+use crate::{Context, Data, Error};
 use poise::{
-    ApplicationContext, CreateReply,
-    serenity_prelude::{AutocompleteChoice, CreateEmbed, ResolvedValue},
+    ApplicationContext,
+    serenity_prelude::{AutocompleteChoice, ResolvedValue},
 };
 
 #[poise::command(slash_command)]
