@@ -3,11 +3,17 @@ use serde::{Serialize, de::Deserialize};
 use serde_json::{from_str, to_string};
 use std::fmt::Debug;
 
-pub struct Client {
+pub struct Cache {
     redis_client: redis::Client,
 }
 
-impl Client {
+impl Cache {
+    pub fn new(redis_url: &str) -> Result<Self, CacheError> {
+        Ok(Self {
+            redis_client: redis::Client::open(redis_url)?,
+        })
+    }
+
     pub async fn set<T>(&self, key: &str, value: T, expiration: u64) -> Result<(), CacheError>
     where
         T: Serialize,
@@ -38,15 +44,6 @@ impl Client {
     }
 }
 
-impl Default for Client {
-    fn default() -> Self {
-        let redis_url = std::env::var("REDIS").expect("Need to specify REDIS with the REDIS_URL");
-        Self {
-            redis_client: redis::Client::open(redis_url).unwrap(),
-        }
-    }
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum CacheError {
     #[error("Error from Serde: {0}")]
@@ -58,13 +55,12 @@ pub enum CacheError {
 
 #[cfg(test)]
 mod tests {
-    use playground_api::endpoints::VersionsResponse;
-
     use super::*;
+    use playground_api::endpoints::VersionsResponse;
 
     #[tokio::test]
     async fn success() {
-        let redis_client = Client::default();
+        let redis_client = Cache::new("redis://127.0.0.1:6379").unwrap();
         let play_client = playground_api::Client::default();
 
         let res = play_client.versions().await.unwrap();
