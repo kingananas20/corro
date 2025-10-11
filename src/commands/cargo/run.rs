@@ -3,9 +3,9 @@ use crate::{
     common::{escape_triple_backticks, extract_32byte_hex, limit_string},
     error::CommandError,
 };
-use log::{debug, info};
 use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
 use poise::{CreateReply, serenity_prelude::Attachment};
+use tracing::{debug, info};
 
 /// Runs code from a code block in the Rust playground and returns the output
 #[poise::command(
@@ -138,6 +138,7 @@ async fn run_file(
     execute_and_respond(ctx, req, &filename, Some(&url)).await
 }
 
+#[tracing::instrument]
 async fn execute_and_respond(
     ctx: Context<'_>,
     req: ExecuteRequest,

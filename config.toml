@@ -2,3 +2,6 @@ owners = [
     "863480661007138858"
 ]
 prefix = "!"
+
+[logging]
+log_level = "Debug"

@@ -1,16 +1,16 @@
 use corro::{Context, Data, Error, commands, on_error, parse_config, setup_logging};
 use dotenv::dotenv;
-use log::{debug, info};
 use poise::{
     Framework, FrameworkOptions,
     serenity_prelude::{self as serenity},
 };
+use tracing::{debug, info};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<Error>> {
     dotenv().ok();
     let config = parse_config();
-    setup_logging()?;
+    setup_logging(&config.logging);
     info!("Config parsed and logging initialized");
 
     info!("Configuring bot...");

@@ -1,6 +1,6 @@
 use crate::{Data, cache::CacheError};
-use log::warn;
 use poise::FrameworkError;
+use tracing::warn;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -21,9 +21,6 @@ pub enum Error {
 
     #[error("Error while accessing the filesystem: {0:?}")]
     FilesystemIO(#[from] std::io::Error),
-
-    #[error("Error while logging: {0:?}")]
-    Log(#[from] log::SetLoggerError),
 }
 
 impl Error {
@@ -85,6 +82,7 @@ impl CommandError {
     }
 }
 
+#[tracing::instrument]
 pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     if let FrameworkError::Command { error, ctx, .. } = error {
         warn!("{error}");
