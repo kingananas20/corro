@@ -147,31 +147,22 @@ async fn execute_and_respond(
     debug!("Executing playground request for {source_label}");
 
     let res = ctx.data().playground_client.execute(&req).await?;
-    let out = if res.success {
-        &res.stdout
-    } else {
-        &res.stderr
-    };
+    let out = if res.success { res.stdout } else { res.stderr };
 
     if out.is_empty() {
         let reply = if let Some(url) = source_url {
             format!("Running the code from [{source_label}](<{url}>) gave no output")
         } else {
-            format!("Running your code gave no output")
+            "Running your code gave no output".to_owned()
         };
         ctx.send(CreateReply::default().content(reply)).await?;
         return Ok(());
     }
 
-    let author = ctx.author();
-    let mention = format!("<@{}>", author.id);
-
     let header = if let Some(url) = source_url {
-        format!(
-            "Running the code from [{source_label}](<{url}>) gave the following output {mention}"
-        )
+        format!("Running the code from [{source_label}](<{url}>) gave the following output")
     } else {
-        format!("Running your code returned the following output {mention}")
+        "Running your code returned the following output".to_owned()
     };
 
     let out = escape_triple_backticks(&out);

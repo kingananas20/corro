@@ -105,21 +105,18 @@ async fn miri_and_respond(
         let reply = if let Some(url) = source_url {
             format!("Running the code from [{source_label}](<{url}>) with miri gave no output")
         } else {
-            format!("Running your code with miri gave no output")
+            "Running your code with miri gave no output".to_owned()
         };
         ctx.send(CreateReply::default().content(reply)).await?;
         return Ok(());
     }
 
-    let author = ctx.author();
-    let mention = format!("<@{}>", author.id);
-
     let header = if let Some(url) = source_url {
         format!(
-            "Running the code from [{source_label}](<{url}>) with miri gave the following output {mention}"
+            "Running the code from [{source_label}](<{url}>) with miri gave the following output"
         )
     } else {
-        format!("Running your code with miri returned the following output {mention}")
+        "Running your code with miri returned the following output".to_owned()
     };
 
     let out = escape_triple_backticks(&out);
