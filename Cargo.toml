@@ -27,3 +27,5 @@ log = "0.4.27"
 docsrs = "0.1.4"
 konfik = "0.2.1"
 clap = { version = "4.5.48", features = ["derive"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.20", features = ["json"] }

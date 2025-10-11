@@ -1,7 +1,8 @@
-use std::collections::HashSet;
+pub mod logging;
 
 use konfik::{ConfigLoader, Konfik};
 use poise::serenity_prelude::UserId;
+use std::collections::HashSet;
 
 #[derive(Debug, Konfik, clap::Parser, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Config {
@@ -11,6 +12,9 @@ pub struct Config {
     pub prefix: String,
     #[clap(skip)]
     pub owners: HashSet<UserId>,
+    #[clap(flatten)]
+    #[serde(default)]
+    pub logging: logging::LoggingConfig,
 }
 
 pub fn parse_config() -> Config {

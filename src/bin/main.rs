@@ -10,7 +10,7 @@ use poise::{
 async fn main() -> Result<(), Box<Error>> {
     dotenv().ok();
     let config = parse_config();
-    setup_logging()?;
+    setup_logging(&config.logging);
     info!("Config parsed and logging initialized");
 
     info!("Configuring bot...");
