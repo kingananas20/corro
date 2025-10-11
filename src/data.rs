@@ -37,7 +37,7 @@ impl Data {
 
         Self {
             playground_client: playground_api::Client::default(),
-            redis_client: cache::Cache::new(&redis_url).unwrap(),
+            redis_client: cache::Cache::new(redis_url).unwrap(),
             crates_io_client: crates_io_api::AsyncClient::new(
                 &format!("corro-discord-bot ({email})"),
                 std::time::Duration::from_millis(1000),
