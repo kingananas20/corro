@@ -3,9 +3,9 @@ use crate::{
     common::{escape_triple_backticks, extract_32byte_hex, limit_string},
     error::CommandError,
 };
-use log::debug;
 use playground_api::endpoints::{AliasingModel, Edition, MiriRequest};
 use poise::{CreateReply, serenity_prelude::Attachment};
+use tracing::debug;
 
 #[poise::command(prefix_command, slash_command, subcommands("miri_gist", "miri_file"))]
 pub async fn miri(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
@@ -90,6 +90,7 @@ async fn miri_file(
     miri_and_respond(ctx, req, &filename, Some(&url)).await
 }
 
+#[tracing::instrument]
 async fn miri_and_respond(
     ctx: Context<'_>,
     req: MiriRequest,

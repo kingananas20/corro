@@ -1,10 +1,10 @@
 use corro::{Context, Data, Error, commands, on_error, parse_config, setup_logging};
 use dotenv::dotenv;
-use log::{debug, info};
 use poise::{
     Framework, FrameworkOptions,
     serenity_prelude::{self as serenity},
 };
+use tracing::{debug, info};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<Error>> {

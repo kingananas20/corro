@@ -2,9 +2,11 @@
 #[derive(Debug, Clone, serde::Deserialize, clap::Args, Default, PartialEq, Eq)]
 pub struct LoggingConfig {
     /// The output formatting
+    #[arg(long)]
     #[serde(default)]
     pub output_format: OutputFormat,
     /// The maximum log level for the output
+    #[arg(long)]
     #[serde(default)]
     pub log_level: LogLevel,
 }
@@ -14,6 +16,8 @@ pub struct LoggingConfig {
 pub enum OutputFormat {
     /// Default
     Default,
+    /// Compact
+    Compact,
     /// Human-readable
     Pretty,
     /// Machine-readable JSON

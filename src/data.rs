@@ -1,6 +1,8 @@
+use std::fmt::Debug;
+
 use crate::cache;
 use docsrs::{Doc, Indexed};
-use log::info;
+use tracing::info;
 
 pub struct Data {
     pub playground_client: playground_api::Client,
@@ -48,5 +50,19 @@ impl Data {
             core,
             alloc,
         }
+    }
+}
+
+impl Debug for Data {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Data")
+            .field("playground_client", &"<non-debug>")
+            .field("redis_client", &"<non-debug>")
+            .field("crates_io_client", &"<non-debug>")
+            .field("max_code_size", &self.max_code_size)
+            .field("std", &"<non-debug>")
+            .field("core", &"<non-debug>")
+            .field("alloc", &"<non-debug>")
+            .finish()
     }
 }

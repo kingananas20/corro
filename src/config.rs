@@ -6,9 +6,13 @@ use std::collections::HashSet;
 
 #[derive(Debug, Konfik, clap::Parser, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct Config {
+    #[arg(long)]
     pub discord_token: String,
+    #[arg(long)]
     pub email: String,
+    #[arg(long)]
     pub redis_url: String,
+    #[arg(long)]
     pub prefix: String,
     #[clap(skip)]
     pub owners: HashSet<UserId>,

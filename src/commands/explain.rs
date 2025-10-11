@@ -1,5 +1,4 @@
 use crate::{Context, Error, common::split_content, error::CommandError};
-use log::info;
 use poise::{self, CreateReply, serenity_prelude::CreateEmbed};
 use regex::Regex;
 use std::{
@@ -8,6 +7,7 @@ use std::{
     sync::{Arc, OnceLock},
 };
 use tokio::sync::RwLock;
+use tracing::info;
 
 static ERROR_CODES: OnceLock<RwLock<Arc<Vec<String>>>> = OnceLock::new();
 
@@ -40,6 +40,7 @@ async fn load_error_codes() -> Arc<Vec<String>> {
     lock.read().await.clone()
 }
 
+#[tracing::instrument]
 #[poise::command(prefix_command, owners_only)]
 pub async fn reload_errors(ctx: Context<'_>) -> Result<(), Error> {
     info!("Reloading error codes");
