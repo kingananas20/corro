@@ -1,10 +1,14 @@
 // Converts error code markdown files to markdown supported by discord
+use regex::Regex;
+use std::collections::HashMap;
 
-fn transform_text_general(input: &str) -> String {
-    let mut new_text = String::new();
-    let mut inside_code_block = false;
+/// Main transform function (behaves identically to your original implementation)
+pub fn transform_text_general(input: &str) -> String {
+    let mut out = String::with_capacity(input.len());
     let mut para_buf = String::new();
+    let mut inside_code = false;
 
+    // Helper: flush paragraph buffer into output (collapse whitespace)
     let flush_para = |out: &mut String, buf: &mut String| {
         if !buf.is_empty() {
             let collapsed = buf.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -14,80 +18,33 @@ fn transform_text_general(input: &str) -> String {
         }
     };
 
-    fn is_list_item(trimmed: &str) -> bool {
-        if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
-            return true;
-        }
-        // numbered list like "1. " or "10. "
-        let mut chars = trimmed.chars();
-        let mut seen_digit = false;
-        while let Some(c) = chars.next() {
-            if c.is_ascii_digit() {
-                seen_digit = true;
-                continue;
-            }
-            if c == '.' && seen_digit {
-                return chars.next().is_some_and(|n| n == ' ');
-            }
-            break;
-        }
-        false
-    }
-
-    fn extract_list_marker(trimmed: &str) -> (String, &str) {
-        if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
-            let marker = (trimmed[..2]).to_string();
-            let rest = &trimmed[2..];
-            return (marker, rest);
-        }
-        // numbered: consume digits + ". "
-        let mut idx = 0usize;
-        for (i, ch) in trimmed.char_indices() {
-            if ch.is_ascii_digit() {
-                idx = i + ch.len_utf8();
-                continue;
-            }
-            if ch == '.' {
-                // expect a space after dot
-                let after = idx + 1;
-                if trimmed.get(after..after + 1) == Some(" ") {
-                    let marker = trimmed[..after + 1].to_string(); // includes dot and space
-                    let rest = &trimmed[after + 1..];
-                    return (marker, rest);
-                }
-            }
-            break;
-        }
-        // fallback: treat whole line as rest with empty marker
-        (String::new(), trimmed)
-    }
-
     let mut lines = input.lines().peekable();
     while let Some(line) = lines.next() {
-        // handle fenced code blocks
+        // code-fence handling (toggle)
         if line.starts_with("```") {
-            flush_para(&mut new_text, &mut para_buf);
-            if !inside_code_block {
-                new_text.push_str("```rust\n");
-                inside_code_block = true;
+            flush_para(&mut out, &mut para_buf);
+            if !inside_code {
+                out.push_str("```rust\n");
+                inside_code = true;
             } else {
-                new_text.push_str("```\n");
-                inside_code_block = false;
+                out.push_str("```\n");
+                inside_code = false;
             }
             continue;
         }
 
-        if inside_code_block {
-            new_text.push_str(line);
-            new_text.push('\n');
+        if inside_code {
+            out.push_str(line);
+            out.push('\n');
             continue;
         }
 
         let trimmed = line.trim_start();
-        // blank line => paragraph boundary
+
+        // blank line -> paragraph boundary
         if trimmed.is_empty() {
-            flush_para(&mut new_text, &mut para_buf);
-            new_text.push('\n');
+            flush_para(&mut out, &mut para_buf);
+            out.push('\n');
             continue;
         }
 
@@ -97,14 +54,14 @@ fn transform_text_general(input: &str) -> String {
         let is_list = is_list_item(trimmed);
 
         if is_list {
-            // collapse this list item with any following continuation lines
-            flush_para(&mut new_text, &mut para_buf);
+            // flush current paragraph then collapse this list item with following continuation lines
+            flush_para(&mut out, &mut para_buf);
 
             let (marker, rest) = extract_list_marker(trimmed);
             let mut item_buf = rest.trim_start().to_string();
 
             while let Some(peek) = lines.peek() {
-                let pl = peek;
+                let pl = *peek;
                 let ptrim = pl.trim_start();
                 if ptrim.is_empty() {
                     break;
@@ -119,7 +76,7 @@ fn transform_text_general(input: &str) -> String {
                 {
                     break;
                 }
-                // consume continuation line and append
+                // consume and append continuation
                 let cont = lines.next().unwrap();
                 if !item_buf.is_empty() {
                     item_buf.push(' ');
@@ -127,23 +84,22 @@ fn transform_text_general(input: &str) -> String {
                 item_buf.push_str(cont.trim_start());
             }
 
-            // emit collapsed list line (preserve marker)
             if marker.is_empty() {
-                new_text.push_str(&format!("{item_buf}\n"));
+                out.push_str(&format!("{item_buf}\n"));
             } else {
-                new_text.push_str(&format!("{marker}{item_buf}\n"));
+                out.push_str(&format!("{marker}{item_buf}\n"));
             }
             continue;
         }
 
         if is_indented_code || is_heading || is_blockquote {
-            flush_para(&mut new_text, &mut para_buf);
-            new_text.push_str(line);
-            new_text.push('\n');
+            flush_para(&mut out, &mut para_buf);
+            out.push_str(line);
+            out.push('\n');
             continue;
         }
 
-        // normal paragraph line: accumulate
+        // normal paragraph accumulation
         if !para_buf.is_empty() {
             para_buf.push(' ');
         }
@@ -151,22 +107,69 @@ fn transform_text_general(input: &str) -> String {
     }
 
     // final flush
-    flush_para(&mut new_text, &mut para_buf);
+    flush_para(&mut out, &mut para_buf);
 
-    // perform link conversion
-    new_text = convert_links_final(&new_text);
+    // perform link conversion (kept as a separate function to preserve behavior)
+    let mut out = convert_links_final(&out);
 
-    // Trim trailing blank lines (collapse to at most one trailing newline)
-    while new_text.ends_with("\n\n") {
-        new_text.pop();
+    // Trim trailing blank lines to at most one newline (preserve original loop behavior)
+    while out.ends_with("\n\n") {
+        out.pop();
     }
 
-    new_text
+    out
 }
 
-use regex::Regex;
-use std::collections::HashMap;
+fn is_list_item(trimmed: &str) -> bool {
+    if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
+        return true;
+    }
+    let mut chars = trimmed.chars();
+    let mut seen_digit = false;
+    while let Some(c) = chars.next() {
+        if c.is_ascii_digit() {
+            seen_digit = true;
+            continue;
+        }
+        if c == '.' && seen_digit {
+            return chars.next().is_some_and(|n| n == ' ');
+        }
+        break;
+    }
+    false
+}
 
+fn extract_list_marker(trimmed: &str) -> (String, &str) {
+    // unordered marker
+    if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
+        return (trimmed[..2].to_string(), &trimmed[2..]);
+    }
+
+    // numbered marker: mimic original logic
+    let mut idx = 0usize;
+    for (i, ch) in trimmed.char_indices() {
+        if ch.is_ascii_digit() {
+            idx = i + ch.len_utf8();
+            continue;
+        }
+        if ch == '.' {
+            // expect a space after dot (original used get(after..after+1) == Some(" "))
+            let after = idx + 1;
+            if trimmed.get(after..after + 1) == Some(" ") {
+                // include digits, dot and trailing space in marker
+                let marker = trimmed[..after + 1].to_string();
+                let rest = &trimmed[after + 1..];
+                return (marker, rest);
+            }
+        }
+        break;
+    }
+
+    // fallback
+    (String::new(), trimmed)
+}
+
+/// Convert reference-style links (exact same behavior as original)
 pub fn convert_links_final(input: &str) -> String {
     // collect reference definitions `[label]: url`
     let def_re = Regex::new(r"(?m)^\s*\[([^\]]+)\]:\s*(\S+)\s*$").unwrap();
@@ -192,7 +195,7 @@ pub fn convert_links_final(input: &str) -> String {
         })
         .to_string();
 
-    // `[text][]` -> `[text](url)` where label == text (common shorthand)
+    // `[text][]` -> `[text](url)` where label == text
     let re_text_empty = Regex::new(r"\[([^\]]+)\]\[\]").unwrap();
     s = re_text_empty
         .replace_all(&s, |caps: &regex::Captures| {
@@ -242,8 +245,8 @@ pub fn convert_links_final(input: &str) -> String {
             let m = caps.get(0).unwrap();
             let start = m.start();
             if start > 0 {
-                let prev = out.as_bytes()[start - 1] as char;
-                if prev == '(' {
+                // preserve original check: examine the previous byte as char (only checks for '(')
+                if out.as_bytes()[start - 1] as char == '(' {
                     return m.as_str().to_string();
                 }
             }
