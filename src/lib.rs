@@ -1,7 +1,7 @@
 mod cache;
 pub mod commands;
 mod common;
-mod config;
+pub mod config;
 mod data;
 mod error;
 mod log;

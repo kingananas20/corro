@@ -1,8 +1,11 @@
-// Converts error code markdown files to markdown supported by discord
+use corro::config::logging::{LogLevel, LoggingConfig, OutputFormat};
+use corro::setup_logging;
 use regex::Regex;
 use std::collections::HashMap;
+use std::fs;
+use tracing::{debug, info};
 
-/// Main transform function (behaves identically to your original implementation)
+/// Main transform function
 pub fn transform_text_general(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
     let mut para_buf = String::new();
@@ -109,10 +112,10 @@ pub fn transform_text_general(input: &str) -> String {
     // final flush
     flush_para(&mut out, &mut para_buf);
 
-    // perform link conversion (kept as a separate function to preserve behavior)
+    // perform link conversion
     let mut out = convert_links_final(&out);
 
-    // Trim trailing blank lines to at most one newline (preserve original loop behavior)
+    // Trim trailing blank lines to at most one newline
     while out.ends_with("\n\n") {
         out.pop();
     }
@@ -169,7 +172,7 @@ fn extract_list_marker(trimmed: &str) -> (String, &str) {
     (String::new(), trimmed)
 }
 
-/// Convert reference-style links (exact same behavior as original)
+/// Convert reference-style links
 pub fn convert_links_final(input: &str) -> String {
     // collect reference definitions `[label]: url`
     let def_re = Regex::new(r"(?m)^\s*\[([^\]]+)\]:\s*(\S+)\s*$").unwrap();
@@ -260,7 +263,10 @@ pub fn convert_links_final(input: &str) -> String {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    use std::fs;
+    setup_logging(&LoggingConfig {
+        output_format: OutputFormat::Default,
+        log_level: LogLevel::Trace,
+    });
     let re = Regex::new(r"^assets/error_codes/E\d{4}\.md$").unwrap();
 
     for entry in fs::read_dir("assets/error_codes")? {
@@ -273,9 +279,11 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             }
         }
 
+        debug!("Starting conversion for {path:?}");
         let content = fs::read_to_string(&path)?;
         let transformed = transform_text_general(&content);
         fs::write(&path, transformed)?;
+        info!("Conversion for {path:?} done");
     }
 
     Ok(())
