@@ -11,6 +11,7 @@ use tracing::info;
 
 // TODO! Make the load_error_codes function when the array is empty download the files
 // from github using the github api and then applying the formatting for each file.
+// https://github.apidog.io/api-3489312
 
 static ERROR_CODES: OnceLock<RwLock<Arc<Vec<String>>>> = OnceLock::new();
 
