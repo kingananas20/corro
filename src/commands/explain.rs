@@ -9,6 +9,9 @@ use std::{
 use tokio::sync::RwLock;
 use tracing::info;
 
+// TODO! Make the load_error_codes function when the array is empty download the files
+// from github using the github api and then applying the formatting for each file.
+
 static ERROR_CODES: OnceLock<RwLock<Arc<Vec<String>>>> = OnceLock::new();
 
 async fn load_error_codes() -> Arc<Vec<String>> {
