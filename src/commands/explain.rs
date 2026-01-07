@@ -41,7 +41,7 @@ async fn load_error_codes() -> Arc<Vec<String>> {
 }
 
 #[tracing::instrument]
-#[poise::command(prefix_command, owners_only)]
+#[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn reload_errors(ctx: Context<'_>) -> Result<(), Error> {
     info!("Reloading error codes");
     {
