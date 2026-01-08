@@ -1,22 +1,41 @@
-/// FIXME: Doesn't work correctly. Maybe also change to embed output for code output
-pub fn limit_string(input: &str, max_lines: usize, max_length: usize) -> String {
-    let limited_lines = input
-        .lines()
-        .take(max_lines)
-        .collect::<Vec<&str>>()
-        .join("\n");
+use std::borrow::Cow;
 
-    let bytes = limited_lines.as_bytes();
-    if bytes.len() <= max_length {
-        return limited_lines;
+pub fn limit_string<'a>(input: &'a str, max_lines: usize, max_bytes: usize) -> Cow<'a, str> {
+    if max_lines == 0 || max_bytes == 0 {
+        return Cow::Borrowed("");
     }
 
-    let mut end = max_length;
-    while !limited_lines.is_char_boundary(end) {
+    let bytes = input.as_bytes();
+    let mut scan = 0usize;
+    let mut lines_taken = 0usize;
+
+    for line in input.lines() {
+        scan += line.len();
+        lines_taken += 1;
+
+        if lines_taken == max_lines {
+            break;
+        }
+
+        while scan < bytes.len() && (bytes[scan] == b'\n' || bytes[scan] == b'\r') {
+            scan += 1;
+        }
+    }
+
+    if scan == input.len() && input.len() <= max_bytes {
+        return Cow::Borrowed(input);
+    }
+
+    let mut end = scan.min(max_bytes);
+    while end > 0 && !input.is_char_boundary(end) {
         end -= 1;
     }
 
-    limited_lines[..end].to_string()
+    if end == input.len() {
+        Cow::Borrowed(input)
+    } else {
+        Cow::Owned(input[..end].to_string())
+    }
 }
 
 #[cfg(test)]
