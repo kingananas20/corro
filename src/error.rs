@@ -6,21 +6,20 @@ use tracing::warn;
 pub enum Error {
     #[error("following command error occured (non critical): {0:?}")]
     Command(#[from] CommandError),
-
     #[error("Error accessing the cache: {0:?}")]
     Database(#[from] CacheError),
-
     #[error("Error from the crates_io_api crate: {0:?}")]
     CratesIO(#[from] crates_io_api::Error),
-
     #[error("Error accessing the playground: {0:?}")]
     Playground(#[from] playground_api::Error),
-
     #[error("Error interacting with poise: {0:?}")]
     Poise(#[from] poise::serenity_prelude::Error),
-
     #[error("Error while accessing the filesystem: {0:?}")]
     FilesystemIO(#[from] std::io::Error),
+    #[error("Error while using reqwest: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("Error while trying to join task: {0}")]
+    TaskJoin(#[from] tokio::task::JoinError),
 }
 
 impl Error {
@@ -51,27 +50,20 @@ pub enum CommandError {
 \`\`\`"#
     )]
     NoCodeBlock,
-
     #[error("Crate `{0}` does not exist!")]
     CrateNotFound(String),
-
     #[error("Invalid error code `{0}`! Please pass in a valid rustc error code.")]
     InvalidErrorCode(String),
-
     #[error(
         "The ID `{0}` is invalid. Please provide a valid 32-byte hexadecimal GitHub Gist ID. Accepted formats include the raw ID, the full Gist URL, or the Gist embed snippet."
     )]
     InvalidId(String),
-
     #[error("`{0}` is not a valid filetype. Needs to be a `.rs` file.")]
     NotValidFile(String),
-
     #[error("The file doesn't contain valid UTF-8 characters")]
     NotValidUTF8,
-
     #[error("Your code is too large: **{0}** bytes. The maximum allowed size is **{1}** bytes.")]
     CodeTooLong(u32, u32),
-
     #[error("No item matched your search: `{0}`")]
     NoMatch(String),
 }

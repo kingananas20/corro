@@ -1,9 +1,5 @@
-use corro::config::logging::{LogLevel, LoggingConfig, OutputFormat};
-use corro::setup_logging;
 use regex::Regex;
 use std::collections::HashMap;
-use std::fs;
-use tracing::{debug, info};
 
 /// Main transform function
 pub fn transform_text_general(input: &str) -> String {
@@ -260,31 +256,4 @@ pub fn convert_links_final(input: &str) -> String {
     // final safety: collapse any `[text][](url)` -> `[text](url)` if it slipped through
     let collapse_re = Regex::new(r"\[([^\]]+)\]\[\]\(([^)]+)\)").unwrap();
     collapse_re.replace_all(&out2, "[$1]($2)").to_string()
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    setup_logging(&LoggingConfig {
-        output_format: OutputFormat::Default,
-        log_level: LogLevel::Trace,
-    });
-    let re = Regex::new(r"^assets/error_codes/E\d{4}\.md$").unwrap();
-
-    for entry in fs::read_dir("assets/error_codes")? {
-        let file = entry?;
-        let path = file.path();
-
-        if let Some(path_str) = path.to_str() {
-            if !re.is_match(path_str) && path.is_file() {
-                continue;
-            }
-        }
-
-        debug!("Starting conversion for {path:?}");
-        let content = fs::read_to_string(&path)?;
-        let transformed = transform_text_general(&content);
-        fs::write(&path, transformed)?;
-        info!("Conversion for {path:?} done");
-    }
-
-    Ok(())
 }

@@ -1,7 +1,6 @@
-use std::fmt::Debug;
-
 use crate::cache;
 use docsrs::{Doc, Indexed};
+use std::fmt::Debug;
 use tracing::info;
 
 pub struct Data {

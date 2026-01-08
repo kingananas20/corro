@@ -12,9 +12,10 @@ pub struct LoggingConfig {
 }
 
 /// The formatting of the output.
-#[derive(Debug, Clone, serde::Deserialize, PartialEq, Eq, clap::ValueEnum)]
+#[derive(Debug, Default, Clone, serde::Deserialize, PartialEq, Eq, clap::ValueEnum)]
 pub enum OutputFormat {
     /// Default
+    #[default]
     Default,
     /// Compact
     Compact,
@@ -24,29 +25,18 @@ pub enum OutputFormat {
     Json,
 }
 
-impl Default for OutputFormat {
-    fn default() -> Self {
-        Self::Default
-    }
-}
-
 /// The log level
-#[derive(Debug, Clone, serde::Deserialize, PartialEq, Eq, clap::ValueEnum)]
+#[derive(Debug, Default, Clone, serde::Deserialize, PartialEq, Eq, clap::ValueEnum)]
 pub enum LogLevel {
     /// Lowest level, very verbose
     Trace,
     /// Lower priority information
     Debug,
     /// Useful information
+    #[default]
     Info,
     /// Hazardous information
     Warn,
     /// Very serious errors
     Error,
-}
-
-impl Default for LogLevel {
-    fn default() -> Self {
-        Self::Info
-    }
 }

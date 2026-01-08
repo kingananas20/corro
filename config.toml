@@ -4,4 +4,4 @@ owners = [
 prefix = "!"
 
 [logging]
-log_level = "Debug"
+log_level = "Trace"

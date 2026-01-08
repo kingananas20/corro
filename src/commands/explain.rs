@@ -1,62 +1,16 @@
+mod download_errors;
+mod format_errors;
+mod load_errors;
+
 use crate::{Context, Error, common::split_content, error::CommandError};
+use load_errors::load_error_codes;
+pub use load_errors::reload_errors;
 use poise::{self, CreateReply, serenity_prelude::CreateEmbed};
-use regex::Regex;
-use std::{
-    fs,
-    path::Path,
-    sync::{Arc, OnceLock},
-};
-use tokio::sync::RwLock;
-use tracing::info;
+use std::fs;
 
 // TODO! Make the load_error_codes function when the array is empty download the files
 // from github using the github api and then applying the formatting for each file.
 // https://github.apidog.io/api-3489312
-
-static ERROR_CODES: OnceLock<RwLock<Arc<Vec<String>>>> = OnceLock::new();
-
-async fn load_error_codes() -> Arc<Vec<String>> {
-    let lock = ERROR_CODES.get_or_init(|| RwLock::new(Arc::new(Vec::new())));
-
-    {
-        let mut codes = lock.write().await;
-
-        if codes.is_empty() {
-            let path = Path::new("assets/error_codes");
-            let regex = Regex::new(r"^E\d{4}\.md").unwrap();
-            let mut new_codes = Vec::new();
-
-            if let Ok(entries) = fs::read_dir(path) {
-                for entry in entries.flatten() {
-                    let filename = entry.file_name();
-                    let name = filename.to_string_lossy().into_owned();
-                    if regex.is_match(&name) {
-                        new_codes.push(name.trim_end_matches(".md").to_string());
-                    }
-                }
-            }
-
-            new_codes.sort();
-            *codes = Arc::new(new_codes);
-        }
-    }
-
-    lock.read().await.clone()
-}
-
-#[tracing::instrument]
-#[poise::command(prefix_command, owners_only, hide_in_help)]
-pub async fn reload_errors(ctx: Context<'_>) -> Result<(), Error> {
-    info!("Reloading error codes");
-    {
-        let lock = ERROR_CODES.get_or_init(|| RwLock::new(Arc::new(Vec::new())));
-        let mut codes = lock.write().await;
-        *codes = Arc::new(Vec::new());
-    }
-    load_error_codes().await;
-    ctx.say("Reloaded error codes.").await?;
-    Ok(())
-}
 
 /// Get an explanation for a specified rust compiler error
 #[poise::command(slash_command, prefix_command)]
