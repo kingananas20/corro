@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{Context, Error};
 use playground_api::endpoints::GistCreateRequest;
 use poise::{CreateReply, command};
@@ -10,7 +12,7 @@ pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<
     let res = ctx
         .data()
         .playground_client
-        .gist_create(&GistCreateRequest::new(code.to_owned()))
+        .gist_create(&GistCreateRequest::new(Cow::Borrowed(code)))
         .await?;
 
     let content = format!(

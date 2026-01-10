@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     Context, Error,
     commands::cargo::code_block,
@@ -10,28 +12,29 @@ use tracing::debug;
 
 const MIRI_RES: MiriResponse = MiriResponse {
     success: false,
-    stdout: String::new(),
-    stderr: String::new(),
-    exit_detail: String::new(),
+    stdout: Cow::Borrowed(""),
+    stderr: Cow::Borrowed(""),
+    exit_detail: Cow::Borrowed(""),
 };
 
-#[poise::command(prefix_command, slash_command, subcommands("miri_gist", "miri_file"))]
+#[poise::command(prefix_command, slash_command, /*subcommands("miri_gist", "miri_file")*/)]
 pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    code_block(ctx, input, parse_miri, MIRI_RES, "miri").await
+    code_block(ctx, &input, parse_miri, MIRI_RES, "miri").await
 }
 
-impl super::WithCode for MiriRequest {
-    fn with_code(&mut self, code: &str) {
-        self.code = code.to_owned();
+impl<'wc> super::WithCode<'wc> for MiriRequest<'wc> {
+    fn with_code(&mut self, code: &'wc str) {
+        self.code = Cow::Borrowed(code);
     }
 }
 
-impl super::Output for MiriResponse {
+impl<'a> super::Output for MiriResponse<'a> {
     fn output(self) -> String {
         format!("{}{}", self.stderr, self.stdout)
     }
 }
 
+/*
 /// Runs code from a Github gist using miri
 #[poise::command(slash_command, rename = "gist", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]
@@ -140,9 +143,9 @@ async fn miri_and_respond(
         .await?;
 
     Ok(())
-}
+}*/
 
-fn parse_miri(command: &str) -> MiriRequest {
+fn parse_miri(command: &'_ str) -> MiriRequest<'_> {
     let parts = command.split_whitespace();
     let mut config = MiriRequest::default();
 

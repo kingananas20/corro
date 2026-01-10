@@ -4,17 +4,17 @@ use playground_api::endpoints::{Request, Response};
 
 pub(super) async fn code_block<'a, F, Req, Res>(
     ctx: Context<'_>,
-    input: String,
+    input: &'a str,
     parser: F,
     _res_type: Res,
-    tool_name: &'a str,
+    tool_name: &str,
 ) -> Result<(), Error>
 where
-    Req: Request + WithCode,
+    Req: Request + WithCode<'a>,
     Res: Response + Output,
-    F: Fn(&str) -> Req,
+    F: Fn(&'a str) -> Req,
 {
-    let (before, code) = extract_before_and_code(&input)?;
+    let (before, code) = extract_before_and_code(input)?;
 
     let mut req = parser(before);
     req.with_code(code);
@@ -28,6 +28,6 @@ where
     Ok(())
 }
 
-pub(super) trait WithCode {
-    fn with_code(&mut self, code: &str);
+pub(super) trait WithCode<'wc> {
+    fn with_code(&mut self, code: &'wc str);
 }

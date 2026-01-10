@@ -7,13 +7,14 @@ use playground_api::endpoints::{
     Channel, CrateType, Edition, ExecuteRequest, ExecuteResponse, Mode,
 };
 use poise::{CreateReply, serenity_prelude::Attachment};
+use std::borrow::Cow;
 use tracing::{debug, info};
 
 const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
     success: false,
-    stdout: String::new(),
-    stderr: String::new(),
-    exit_detail: String::new(),
+    stdout: Cow::Borrowed(""),
+    stderr: Cow::Borrowed(""),
+    exit_detail: Cow::Borrowed(""),
 };
 
 /// Runs code from a code block in the Rust playground and returns the output
@@ -21,30 +22,31 @@ const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
     prefix_command,
     slash_command,
     rename = "run",
-    subcommands("run_gist", "run_file")
+    //subcommands("run_gist", "run_file")
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    super::code_block(ctx, input, parse_run_command, EXECUTE_RES, "run").await
+    super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
 }
 
 /// Runs code from a code block in the Rust playground and returns the output
 #[poise::command(prefix_command, rename = "run")]
 pub async fn run_alias(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    super::code_block(ctx, input, parse_run_command, EXECUTE_RES, "run").await
+    super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
 }
 
-impl super::WithCode for ExecuteRequest {
-    fn with_code(&mut self, code: &str) {
-        self.code = code.to_owned();
+impl<'wc> super::WithCode<'wc> for ExecuteRequest<'wc> {
+    fn with_code(&mut self, code: &'wc str) {
+        self.code = Cow::Borrowed(code);
     }
 }
 
-impl super::Output for ExecuteResponse {
+impl<'a> super::Output for ExecuteResponse<'a> {
     fn output(self) -> String {
         format!("{}{}", self.stderr, self.stdout)
     }
 }
 
+/*
 /// Runs code from a Github gist
 #[poise::command(slash_command, rename = "gist", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]
@@ -71,7 +73,7 @@ async fn run_gist(
         crate_type.unwrap_or(CrateType::Binary),
         tests.unwrap_or(false),
         backtrace.unwrap_or(false),
-        String::new(),
+        Cow::Owned(String::new()),
     );
     debug!("got config: {config:?}");
 
@@ -128,7 +130,7 @@ async fn run_file(
         crate_type.unwrap_or(CrateType::Binary),
         tests.unwrap_or(false),
         backtrace.unwrap_or(false),
-        String::new(),
+        Cow::Borrowed(""),
     );
     debug!("got config: {config:?}");
 
@@ -137,7 +139,10 @@ async fn run_file(
     let file_content = file.download().await?;
     let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
 
-    let req = ExecuteRequest { code, ..config };
+    let req = ExecuteRequest {
+        code: Cow::Borrowed(&code),
+        ..config
+    };
 
     let url = file.url;
     let filename = file.filename;
@@ -181,9 +186,9 @@ async fn execute_and_respond(
         .await?;
 
     Ok(())
-}
+}*/
 
-fn parse_run_command(command: &str) -> ExecuteRequest {
+fn parse_run_command(command: &'_ str) -> ExecuteRequest<'_> {
     let parts = command.split_whitespace();
 
     let mut config = ExecuteRequest::default();
