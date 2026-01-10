@@ -6,11 +6,11 @@ use poise::{CreateReply, command};
 #[command(prefix_command, guild_cooldown = 60)]
 pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
     let input = input.unwrap_or("".to_owned());
-    let code = crate::common::extract_code(&input)?;
+    let (_, code) = crate::common::extract_before_and_code(&input)?;
     let res = ctx
         .data()
         .playground_client
-        .gist_create(&GistCreateRequest::new(code))
+        .gist_create(&GistCreateRequest::new(code.to_owned()))
         .await?;
 
     let content = format!(

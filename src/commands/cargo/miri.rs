@@ -1,24 +1,35 @@
 use crate::{
     Context, Error,
+    commands::cargo::code_block,
     common::{escape_triple_backticks, extract_32byte_hex, limit_string},
     error::CommandError,
 };
-use playground_api::endpoints::{AliasingModel, Edition, MiriRequest};
+use playground_api::endpoints::{AliasingModel, Edition, MiriRequest, MiriResponse};
 use poise::{CreateReply, serenity_prelude::Attachment};
 use tracing::debug;
 
+const MIRI_RES: MiriResponse = MiriResponse {
+    success: false,
+    stdout: String::new(),
+    stderr: String::new(),
+    exit_detail: String::new(),
+};
+
 #[poise::command(prefix_command, slash_command, subcommands("miri_gist", "miri_file"))]
-pub async fn miri(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
-    let input = input.unwrap_or("".to_owned());
-    let parameters = match input.lines().next() {
-        Some(line) if !line.trim_start().starts_with("```") => line,
-        _ => "",
-    };
-    let code = crate::common::extract_code(&input)?;
+pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+    code_block(ctx, input, parse_miri, MIRI_RES, "miri").await
+}
 
-    let req = parse_miri(parameters, code);
+impl super::WithCode for MiriRequest {
+    fn with_code(&mut self, code: &str) {
+        self.code = code.to_owned();
+    }
+}
 
-    miri_and_respond(ctx, req, "code_block", None).await
+impl super::Output for MiriResponse {
+    fn output(self) -> String {
+        format!("{}{}", self.stderr, self.stdout)
+    }
 }
 
 /// Runs code from a Github gist using miri
@@ -44,7 +55,7 @@ async fn miri_gist(
     let gist = match ctx.data().redis_client.get(&db_id).await {
         Ok(Some(gist)) => gist,
         Ok(None) => {
-            let gist = ctx.data().playground_client.gist_get(id.clone()).await?;
+            let gist = ctx.data().playground_client.gist_get(&id).await?;
             ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
             gist
         }
@@ -131,19 +142,16 @@ async fn miri_and_respond(
     Ok(())
 }
 
-fn parse_miri(command: &str, code: String) -> MiriRequest {
+fn parse_miri(command: &str) -> MiriRequest {
     let parts = command.split_whitespace();
-    let mut config = MiriRequest {
-        code,
-        ..Default::default()
-    };
+    let mut config = MiriRequest::default();
 
     for arg in parts {
         match arg.to_lowercase().as_str() {
             "2015" | "e2015" => config.edition = Edition::Edition2015,
             "2018" | "e2018" => config.edition = Edition::Edition2018,
             "2021" | "e2021" => config.edition = Edition::Edition2021,
-            "2024" | "e2024" => config.edition = Edition::Edition2021,
+            "2024" | "e2024" => config.edition = Edition::Edition2024,
             "tests" => config.tests = true,
             "stacked" => config.aliasing_model = Some(AliasingModel::Stacked),
             "tree" => config.aliasing_model = Some(AliasingModel::Tree),

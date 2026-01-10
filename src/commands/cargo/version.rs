@@ -45,9 +45,7 @@ pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
         .field("rustc", rustc, true)
         .field("rustfmt", rustfmt, true)
         .field("clippy", clippy, true)
-        .author(
-            CreateEmbedAuthor::new("Cargo").url("https://github.com/kingananas20/playground-bot"),
-        );
+        .author(CreateEmbedAuthor::new("corro").url("https://github.com/kingananas20/corro"));
 
     if let Some(miri_version) = miri {
         embed = embed.field("miri", miri_version.version, true);

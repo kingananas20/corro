@@ -3,9 +3,18 @@ use crate::{
     common::{escape_triple_backticks, extract_32byte_hex, limit_string},
     error::CommandError,
 };
-use playground_api::endpoints::{Channel, CrateType, Edition, ExecuteRequest, Mode};
+use playground_api::endpoints::{
+    Channel, CrateType, Edition, ExecuteRequest, ExecuteResponse, Mode,
+};
 use poise::{CreateReply, serenity_prelude::Attachment};
 use tracing::{debug, info};
+
+const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
+    success: false,
+    stdout: String::new(),
+    stderr: String::new(),
+    exit_detail: String::new(),
+};
 
 /// Runs code from a code block in the Rust playground and returns the output
 #[poise::command(
@@ -14,29 +23,26 @@ use tracing::{debug, info};
     rename = "run",
     subcommands("run_gist", "run_file")
 )]
-pub async fn run_code_block(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
-    run_code_block_logic(ctx, input).await
+pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+    super::code_block(ctx, input, parse_run_command, EXECUTE_RES, "run").await
 }
 
 /// Runs code from a code block in the Rust playground and returns the output
 #[poise::command(prefix_command, rename = "run")]
-pub async fn run_alias(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
-    run_code_block_logic(ctx, input).await
+pub async fn run_alias(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+    super::code_block(ctx, input, parse_run_command, EXECUTE_RES, "run").await
 }
 
-async fn run_code_block_logic(ctx: Context<'_>, input: Option<String>) -> Result<(), Error> {
-    info!("executing run_code_block...");
-    let input = input.unwrap_or_default();
-    let parameters = input
-        .lines()
-        .next()
-        .filter(|line| !line.trim_start().starts_with("```"))
-        .unwrap_or_default();
+impl super::WithCode for ExecuteRequest {
+    fn with_code(&mut self, code: &str) {
+        self.code = code.to_owned();
+    }
+}
 
-    let code = crate::common::extract_code(&input)?;
-    let req = parse_run_command(parameters, code);
-
-    execute_and_respond(ctx, req, "code_block", None).await
+impl super::Output for ExecuteResponse {
+    fn output(self) -> String {
+        format!("{}{}", self.stderr, self.stdout)
+    }
 }
 
 /// Runs code from a Github gist
@@ -76,7 +82,7 @@ async fn run_gist(
         Ok(Some(gist)) => gist,
         Ok(None) => {
             debug!("cache miss, fetching gist: {id}");
-            let gist = ctx.data().playground_client.gist_get(id.clone()).await?;
+            let gist = ctx.data().playground_client.gist_get(&id).await?;
             ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
             gist
         }
@@ -177,7 +183,7 @@ async fn execute_and_respond(
     Ok(())
 }
 
-fn parse_run_command(command: &str, code: String) -> ExecuteRequest {
+fn parse_run_command(command: &str) -> ExecuteRequest {
     let parts = command.split_whitespace();
 
     let mut config = ExecuteRequest::default();
@@ -190,6 +196,7 @@ fn parse_run_command(command: &str, code: String) -> ExecuteRequest {
             "2015" | "e2015" => config.edition = Edition::Edition2015,
             "2018" | "e2018" => config.edition = Edition::Edition2018,
             "2021" | "e2021" => config.edition = Edition::Edition2021,
+            "2024" | "e2024" => config.edition = Edition::Edition2024,
             "binary" | "bin" => config.crate_type = CrateType::Binary,
             "library" | "lib" => config.crate_type = CrateType::Library,
             "tests" => config.tests = true,
@@ -198,6 +205,5 @@ fn parse_run_command(command: &str, code: String) -> ExecuteRequest {
         }
     }
 
-    config.code = code.to_owned();
     config
 }

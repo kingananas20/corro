@@ -41,28 +41,8 @@
 ## 🧠 Linting & Help
 
 - `<prefix>help <topic>` — Explain common Rust idioms.
-- `<prefix>lint` — Style or logic suggestions (simplified clippy).  // no clippy is good
 - `<prefix>tips` — Random Rust tip or idiom with example.
 - `<prefix>why <concept>` — Explain *why* a concept exists (e.g., "why lifetimes?").
-
----
-
-## 🔍 Metadata & Tooling
-
----
-
-## 🎯 Community & Fun (maybe)
-
-- `<prefix>quote` — Show a random quote from the Rust community.
-- `<prefix>meme` — Post a Rust programming meme.
-- `<prefix>vote <poll>` — Start a reaction-based poll.
-
----
-
-## 🔒 Security & Best Practices
-
-- `<prefix>audit` — Run `cargo audit` on shared dependencies.
-- `<prefix>unsafe` — Count `unsafe` blocks in code and warn.
 
 ---
 
