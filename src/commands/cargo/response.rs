@@ -39,7 +39,7 @@ impl<'a> BotResponse<'a> {
         }
 
         let header = self.format_header();
-        let out = escape_triple_backticks(&self.output);
+        let out = escape_triple_backticks(self.output);
         let out = limit_string(&out, Self::MAX_LINES, Self::MAX_BYTES - 13 - header.len());
         let reply = format!("{header}\n```text\n{out}\n```");
 

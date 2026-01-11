@@ -1,4 +1,4 @@
-use super::{BotResponse, Output};
+use super::{BotResponse, Output, WithCode};
 use crate::{Context, Error, common::extract_before_and_code};
 use playground_api::endpoints::{Request, Response};
 
@@ -26,8 +26,4 @@ where
     bot_res.send(ctx).await?;
 
     Ok(())
-}
-
-pub(super) trait WithCode<'wc> {
-    fn with_code(&mut self, code: &'wc str);
 }

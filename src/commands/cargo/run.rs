@@ -1,12 +1,7 @@
-use crate::{
-    Context, Error,
-    common::{escape_triple_backticks, extract_32byte_hex, limit_string},
-    error::CommandError,
-};
+use crate::{Context, Error};
 use playground_api::endpoints::{
     Channel, CrateType, Edition, ExecuteRequest, ExecuteResponse, Mode,
 };
-use poise::{CreateReply, serenity_prelude::Attachment};
 use std::borrow::Cow;
 use tracing::{debug, info};
 
@@ -18,12 +13,7 @@ const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
 };
 
 /// Runs code from a code block in the Rust playground and returns the output
-#[poise::command(
-    prefix_command,
-    slash_command,
-    rename = "run",
-    //subcommands("run_gist", "run_file")
-)]
+#[poise::command(prefix_command, slash_command, rename = "run", subcommands("run_gist"))]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
 }
@@ -35,8 +25,8 @@ pub async fn run_alias(ctx: Context<'_>, #[rest] input: String) -> Result<(), Er
 }
 
 impl<'wc> super::WithCode<'wc> for ExecuteRequest<'wc> {
-    fn with_code(&mut self, code: &'wc str) {
-        self.code = Cow::Borrowed(code);
+    fn with_code(&mut self, code: impl Into<Cow<'wc, str>>) {
+        self.code = code.into();
     }
 }
 
@@ -46,7 +36,6 @@ impl<'a> super::Output for ExecuteResponse<'a> {
     }
 }
 
-/*
 /// Runs code from a Github gist
 #[poise::command(slash_command, rename = "gist", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]
@@ -62,44 +51,23 @@ async fn run_gist(
 ) -> Result<(), Error> {
     info!("executing cargo run gist");
 
-    let Some(id) = extract_32byte_hex(&id) else {
-        return Err(CommandError::InvalidId(id).into());
-    };
-
-    let config = ExecuteRequest::new(
+    let req = ExecuteRequest::new(
         channel.unwrap_or(Channel::Stable),
         mode.unwrap_or(Mode::Debug),
         edition.unwrap_or(Edition::Edition2024),
         crate_type.unwrap_or(CrateType::Binary),
         tests.unwrap_or(false),
         backtrace.unwrap_or(false),
-        Cow::Owned(String::new()),
+        Cow::Borrowed(""),
     );
-    debug!("got config: {config:?}");
+    debug!("got config: {req:?}");
 
     ctx.defer().await?;
 
-    let db_id = format!("gist::{id}");
-    let gist = match ctx.data().redis_client.get(&db_id).await {
-        Ok(Some(gist)) => gist,
-        Ok(None) => {
-            debug!("cache miss, fetching gist: {id}");
-            let gist = ctx.data().playground_client.gist_get(&id).await?;
-            ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
-            gist
-        }
-        Err(e) => return Err(e.into()),
-    };
-
-    let req = ExecuteRequest {
-        code: gist.code,
-        ..config
-    };
-
-    let url = format!("https://gist.github.com/{id}");
-    execute_and_respond(ctx, req, "gist", Some(&url)).await
+    super::gist(ctx, &id, req, EXECUTE_RES, "run").await
 }
 
+/*
 /// Runs code from a Rust source file upload
 #[poise::command(slash_command, rename = "file", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]

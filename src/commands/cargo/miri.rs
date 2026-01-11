@@ -1,14 +1,6 @@
-use std::borrow::Cow;
-
-use crate::{
-    Context, Error,
-    commands::cargo::code_block,
-    common::{escape_triple_backticks, extract_32byte_hex, limit_string},
-    error::CommandError,
-};
+use crate::{Context, Error, commands::cargo::code_block};
 use playground_api::endpoints::{AliasingModel, Edition, MiriRequest, MiriResponse};
-use poise::{CreateReply, serenity_prelude::Attachment};
-use tracing::debug;
+use std::borrow::Cow;
 
 const MIRI_RES: MiriResponse = MiriResponse {
     success: false,
@@ -17,14 +9,14 @@ const MIRI_RES: MiriResponse = MiriResponse {
     exit_detail: Cow::Borrowed(""),
 };
 
-#[poise::command(prefix_command, slash_command, /*subcommands("miri_gist", "miri_file")*/)]
+#[poise::command(prefix_command, slash_command, subcommands("miri_gist"))]
 pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     code_block(ctx, &input, parse_miri, MIRI_RES, "miri").await
 }
 
 impl<'wc> super::WithCode<'wc> for MiriRequest<'wc> {
-    fn with_code(&mut self, code: &'wc str) {
-        self.code = Cow::Borrowed(code);
+    fn with_code(&mut self, code: impl Into<Cow<'wc, str>>) {
+        self.code = code.into();
     }
 }
 
@@ -34,7 +26,6 @@ impl<'a> super::Output for MiriResponse<'a> {
     }
 }
 
-/*
 /// Runs code from a Github gist using miri
 #[poise::command(slash_command, rename = "gist", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]
@@ -45,32 +36,19 @@ async fn miri_gist(
     tests: Option<bool>,
     aliasing_model: Option<AliasingModel>,
 ) -> Result<(), Error> {
-    let Some(id) = extract_32byte_hex(&id) else {
-        return Err(CommandError::InvalidId(id).into());
+    let req = MiriRequest {
+        edition: edition.unwrap_or(Edition::Edition2024),
+        tests: tests.unwrap_or(false),
+        aliasing_model,
+        ..Default::default()
     };
-
-    let edition = edition.unwrap_or(Edition::Edition2024);
-    let tests = tests.unwrap_or(false);
 
     ctx.defer().await?;
 
-    let db_id = format!("gist::{id}");
-    let gist = match ctx.data().redis_client.get(&db_id).await {
-        Ok(Some(gist)) => gist,
-        Ok(None) => {
-            let gist = ctx.data().playground_client.gist_get(&id).await?;
-            ctx.data().redis_client.set(&db_id, &gist, 86400).await?;
-            gist
-        }
-        Err(e) => return Err(e.into()),
-    };
-
-    let req = MiriRequest::new(gist.code, edition, tests, aliasing_model);
-
-    let url = format!("https://gist.github.com/{id}");
-    miri_and_respond(ctx, req, "gist", Some(&url)).await
+    super::gist(ctx, &id, req, MIRI_RES, "miri").await
 }
 
+/*
 /// Run code from a rust file using miri
 #[poise::command(slash_command, rename = "file", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]

@@ -10,9 +10,10 @@ mod run;
 mod version;
 
 use crate::{Context, Error};
-use code_block::{WithCode, code_block};
-use common::Output;
+use code_block::code_block;
+use common::{Output, WithCode};
 use crates::crates;
+use gist::gist;
 use miri::miri;
 use poise::command;
 use publish::publish;
