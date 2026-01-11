@@ -2,8 +2,8 @@ use crate::{Context, Error};
 use playground_api::endpoints::{
     Channel, CrateType, Edition, ExecuteRequest, ExecuteResponse, Mode,
 };
+use poise::serenity_prelude::Attachment;
 use std::borrow::Cow;
-use tracing::{debug, info};
 
 const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
     success: false,
@@ -13,7 +13,12 @@ const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
 };
 
 /// Runs code from a code block in the Rust playground and returns the output
-#[poise::command(prefix_command, slash_command, rename = "run", subcommands("run_gist"))]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    rename = "run",
+    subcommands("run_gist", "run_file")
+)]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
 }
@@ -22,18 +27,6 @@ pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(
 #[poise::command(prefix_command, rename = "run")]
 pub async fn run_alias(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
-}
-
-impl<'wc> super::WithCode<'wc> for ExecuteRequest<'wc> {
-    fn with_code(&mut self, code: impl Into<Cow<'wc, str>>) {
-        self.code = code.into();
-    }
-}
-
-impl<'a> super::Output for ExecuteResponse<'a> {
-    fn output(self) -> String {
-        format!("{}{}", self.stderr, self.stdout)
-    }
 }
 
 /// Runs code from a Github gist
@@ -49,8 +42,6 @@ async fn run_gist(
     tests: Option<bool>,
     backtrace: Option<bool>,
 ) -> Result<(), Error> {
-    info!("executing cargo run gist");
-
     let req = ExecuteRequest::new(
         channel.unwrap_or(Channel::Stable),
         mode.unwrap_or(Mode::Debug),
@@ -60,14 +51,12 @@ async fn run_gist(
         backtrace.unwrap_or(false),
         Cow::Borrowed(""),
     );
-    debug!("got config: {req:?}");
 
     ctx.defer().await?;
 
     super::gist(ctx, &id, req, EXECUTE_RES, "run").await
 }
 
-/*
 /// Runs code from a Rust source file upload
 #[poise::command(slash_command, rename = "file", member_cooldown = 60)]
 #[allow(clippy::too_many_arguments)]
@@ -81,17 +70,7 @@ async fn run_file(
     tests: Option<bool>,
     backtrace: Option<bool>,
 ) -> Result<(), Error> {
-    info!("executing cargo run file {}", file.filename);
-
-    if !file.filename.ends_with(".rs") {
-        return Err(CommandError::NotValidFile(file.filename).into());
-    }
-
-    if file.size > ctx.data().max_code_size {
-        return Err(CommandError::CodeTooLong(file.size, ctx.data().max_code_size).into());
-    }
-
-    let config = ExecuteRequest::new(
+    let req = ExecuteRequest::new(
         channel.unwrap_or(Channel::Stable),
         mode.unwrap_or(Mode::Debug),
         edition.unwrap_or(Edition::Edition2024),
@@ -100,69 +79,18 @@ async fn run_file(
         backtrace.unwrap_or(false),
         Cow::Borrowed(""),
     );
-    debug!("got config: {config:?}");
 
     ctx.defer().await?;
 
-    let file_content = file.download().await?;
-    let code = String::from_utf8(file_content).map_err(|_| CommandError::NotValidUTF8)?;
-
-    let req = ExecuteRequest {
-        code: Cow::Borrowed(&code),
-        ..config
-    };
-
-    let url = file.url;
-    let filename = file.filename;
-    execute_and_respond(ctx, req, &filename, Some(&url)).await
+    super::file(ctx, file, req, EXECUTE_RES, "run").await
 }
 
-#[tracing::instrument]
-async fn execute_and_respond(
-    ctx: Context<'_>,
-    req: ExecuteRequest,
-    source_label: &str,
-    source_url: Option<&str>,
-) -> Result<(), Error> {
-    debug!("Executing playground request for {source_label}");
-
-    let res = ctx.data().playground_client.execute(&req).await?;
-    let out = if res.success { res.stdout } else { res.stderr };
-
-    if out.is_empty() {
-        let reply = if let Some(url) = source_url {
-            format!("Running the code from [{source_label}](<{url}>) gave no output")
-        } else {
-            "Running your code gave no output".to_owned()
-        };
-        ctx.send(CreateReply::default().content(reply)).await?;
-        return Ok(());
-    }
-
-    let header = if let Some(url) = source_url {
-        format!("Running the code from [{source_label}](<{url}>) gave the following output")
-    } else {
-        "Running your code returned the following output".to_owned()
-    };
-
-    let out = escape_triple_backticks(&out);
-    let out = limit_string(&out, 30, 2000 - 13 - header.len());
-    let code_block = format!("```text\n{out}\n```");
-
-    let reply = format!("{header}\n{code_block}");
-    ctx.send(CreateReply::default().content(reply).reply(true))
-        .await?;
-
-    Ok(())
-}*/
-
 fn parse_run_command(command: &'_ str) -> ExecuteRequest<'_> {
-    let parts = command.split_whitespace();
-
     let mut config = ExecuteRequest::default();
 
-    for arg in parts {
-        match arg.to_lowercase().as_str() {
+    command
+        .split_whitespace()
+        .for_each(|arg| match arg.to_lowercase().as_str() {
             "-r" => config.mode = Mode::Release,
             "beta" => config.channel = Channel::Beta,
             "nightly" => config.channel = Channel::Nightly,
@@ -175,8 +103,19 @@ fn parse_run_command(command: &'_ str) -> ExecuteRequest<'_> {
             "tests" => config.tests = true,
             "backtrace" => config.backtrace = true,
             _ => {}
-        }
-    }
+        });
 
     config
+}
+
+impl<'wc> super::WithCode<'wc> for ExecuteRequest<'wc> {
+    fn with_code(&mut self, code: impl Into<Cow<'wc, str>>) {
+        self.code = code.into();
+    }
+}
+
+impl<'a> super::Output for ExecuteResponse<'a> {
+    fn output(self) -> String {
+        format!("{}{}", self.stderr, self.stdout)
+    }
 }

@@ -13,6 +13,7 @@ use crate::{Context, Error};
 use code_block::code_block;
 use common::{Output, WithCode};
 use crates::crates;
+use file::file;
 use gist::gist;
 use miri::miri;
 use poise::command;
