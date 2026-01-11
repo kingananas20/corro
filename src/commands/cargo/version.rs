@@ -8,14 +8,12 @@ use poise::{
 /// Get the current `rustc`, `clippy`, `rustfmt` and `miri` versions used when running `!cargo run`
 #[command(slash_command, prefix_command)]
 pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
-    let res = match ctx.data().redis_client.get("version").await {
-        Ok(Some(content)) => content,
-        Ok(None) => {
-            let res = ctx.data().playground_client.versions().await?;
-            ctx.data().redis_client.set("version", &res, 86400).await?;
-            res
-        }
-        Err(e) => return Err(Error::Database(e)),
+    let res = if let Some(content) = ctx.data().redis_client.get("version").await? {
+        content
+    } else {
+        let res = ctx.data().playground_client.versions().await?;
+        ctx.data().redis_client.set("version", &res, 86400).await?;
+        res
     };
 
     let (rustc, clippy, rustfmt, miri) = match channel {

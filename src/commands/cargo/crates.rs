@@ -7,14 +7,12 @@ pub async fn crates(
     ctx: Context<'_>,
     #[description = "Which page (24 per page)?"] page: Option<usize>,
 ) -> Result<(), Error> {
-    let crates = match ctx.data().redis_client.get("crates").await {
-        Ok(Some(crates)) => crates,
-        Ok(None) => {
-            let res = ctx.data().playground_client.crates().await?;
-            ctx.data().redis_client.set("crates", &res, 86400).await?;
-            res
-        }
-        Err(e) => return Err(Error::Database(e)),
+    let crates = if let Some(crates) = ctx.data().redis_client.get("crates").await? {
+        crates
+    } else {
+        let res = ctx.data().playground_client.crates().await?;
+        ctx.data().redis_client.set("crates", &res, 86400).await?;
+        res
     };
     let page = page.unwrap_or(1);
     let per_page = 24;

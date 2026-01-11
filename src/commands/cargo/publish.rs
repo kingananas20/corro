@@ -1,8 +1,7 @@
-use std::borrow::Cow;
-
 use crate::{Context, Error};
 use playground_api::endpoints::GistCreateRequest;
 use poise::{CreateReply, command};
+use std::borrow::Cow;
 
 /// Publish code in a code block to GitHub Gists
 #[command(prefix_command, guild_cooldown = 60)]
@@ -16,12 +15,11 @@ pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<
         .await?;
 
     let content = format!(
-        "Your code was uploded to github gists <@{}> [#{}](<{}>)",
-        ctx.author().id,
-        res.id,
-        res.url
+        "Your code was published on github gists [#{}](<{}>)",
+        res.id, res.url
     );
-    ctx.send(CreateReply::default().content(content)).await?;
+    ctx.send(CreateReply::default().content(content).reply(true))
+        .await?;
 
     Ok(())
 }
