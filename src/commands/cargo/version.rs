@@ -6,7 +6,7 @@ use poise::{
 };
 
 /// Get the current `rustc`, `clippy`, `rustfmt` and `miri` versions used when running `!cargo run`
-#[command(slash_command, prefix_command)]
+#[command(slash_command, prefix_command, category = "cargo")]
 pub async fn version(ctx: Context<'_>, channel: Channel) -> Result<(), Error> {
     let res = if let Some(content) = ctx.data().redis_client.get("version").await? {
         content

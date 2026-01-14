@@ -15,18 +15,18 @@ use common::{Output, WithCode};
 use crates::crates;
 use file::file;
 use gist::gist;
-use miri::miri;
+pub use miri::miri_code_block;
 use poise::command;
-use publish::publish;
+pub use publish::publish;
 use response::BotResponse;
-pub use run::run_alias;
-use run::run_code_block;
+pub use run::run_code_block;
 use version::version;
 
 #[command(
     prefix_command,
     slash_command,
-    subcommands("run_code_block", "publish", "miri", "crates", "version")
+    subcommands("crates", "version"),
+    category = "cargo"
 )]
 pub async fn cargo(_ctx: Context<'_>) -> Result<(), Error> {
     Ok(())

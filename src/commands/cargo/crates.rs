@@ -2,7 +2,7 @@ use crate::{Context, Error};
 use poise::{CreateReply, serenity_prelude::CreateEmbed};
 
 /// List the crates available to use in the rust playground
-#[poise::command(slash_command)]
+#[poise::command(slash_command, category = "cargo")]
 pub async fn crates(
     ctx: Context<'_>,
     #[description = "Which page (24 per page)?"] page: Option<usize>,

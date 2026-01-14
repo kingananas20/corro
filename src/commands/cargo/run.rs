@@ -17,20 +17,21 @@ const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
     prefix_command,
     slash_command,
     rename = "run",
-    subcommands("run_gist", "run_file")
+    subcommands("run_gist", "run_file"),
+    category = "cargo",
+    broadcast_typing
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
 }
 
-/// Runs code from a code block in the Rust playground and returns the output
-#[poise::command(prefix_command, rename = "run")]
-pub async fn run_alias(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
-}
-
 /// Runs code from a Github gist
-#[poise::command(slash_command, rename = "gist", member_cooldown = 60)]
+#[poise::command(
+    slash_command,
+    rename = "gist",
+    member_cooldown = 60,
+    category = "cargo"
+)]
 #[allow(clippy::too_many_arguments)]
 async fn run_gist(
     ctx: Context<'_>,
@@ -58,7 +59,12 @@ async fn run_gist(
 }
 
 /// Runs code from a Rust source file upload
-#[poise::command(slash_command, rename = "file", member_cooldown = 60)]
+#[poise::command(
+    slash_command,
+    rename = "file",
+    member_cooldown = 60,
+    category = "cargo"
+)]
 #[allow(clippy::too_many_arguments)]
 async fn run_file(
     ctx: Context<'_>,

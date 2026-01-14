@@ -10,13 +10,25 @@ const MIRI_RES: MiriResponse = MiriResponse {
     exit_detail: Cow::Borrowed(""),
 };
 
-#[poise::command(prefix_command, slash_command, subcommands("miri_gist", "miri_file"))]
-pub async fn miri(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
+#[poise::command(
+    prefix_command,
+    slash_command,
+    rename = "miri",
+    subcommands("miri_gist", "miri_file"),
+    category = "cargo",
+    broadcast_typing
+)]
+pub async fn miri_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_miri, MIRI_RES, "miri").await
 }
 
 /// Runs code from a Github gist using miri
-#[poise::command(slash_command, rename = "gist", member_cooldown = 60)]
+#[poise::command(
+    slash_command,
+    rename = "gist",
+    member_cooldown = 60,
+    category = "cargo"
+)]
 #[allow(clippy::too_many_arguments)]
 async fn miri_gist(
     ctx: Context<'_>,
@@ -38,7 +50,12 @@ async fn miri_gist(
 }
 
 /// Run code from a rust file using miri
-#[poise::command(slash_command, rename = "file", member_cooldown = 60)]
+#[poise::command(
+    slash_command,
+    rename = "file",
+    member_cooldown = 60,
+    category = "cargo"
+)]
 #[allow(clippy::too_many_arguments)]
 async fn miri_file(
     ctx: Context<'_>,
