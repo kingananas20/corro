@@ -4,15 +4,15 @@ use poise::{
     serenity_prelude::{AutocompleteChoice, ResolvedValue},
 };
 
-#[poise::command(slash_command)]
+#[poise::command(slash_command, owners_only)]
 pub async fn docs(
-    _ctx: Context<'_>,
-    #[description = "Choose crate"] _source: Krate,
+    ctx: Context<'_>,
+    #[description = "Choose crate"] source: Krate,
     #[description = "Search query"]
     #[autocomplete = "autocomplete_item"]
-    _item: u32,
+    item: u32,
 ) -> Result<(), Error> {
-    /*let item = match source {
+    let item = match source {
         Krate::Std => ctx.data().std.0.items.get(item),
         Krate::Core => ctx.data().core.0.items.get(item),
         Krate::Alloc => ctx.data().alloc.0.items.get(item),
@@ -31,7 +31,7 @@ pub async fn docs(
     };
     embed = embed.color(color);
 
-    ctx.send(CreateReply::default().embed(embed)).await?;*/
+    ctx.send(CreateReply::default().embed(embed)).await?;
 
     Ok(())
 }
@@ -52,7 +52,7 @@ async fn autocomplete_item(
     let msg = "Please complete the parameter `source` first".to_owned();
     let suggestions = match krate {
         Some(source) => get_suggestions(ctx, source, partial),
-        None => vec![(&msg, 0)],
+        None => vec![(msg, 0)],
     };
 
     suggestions
@@ -65,7 +65,7 @@ fn get_suggestions<'a>(
     ctx: ApplicationContext<'a, Data, Error>,
     source: Krate,
     query: &str,
-) -> Vec<(&'a String, u32)> {
+) -> Vec<(String, u32)> {
     let search_result = match source {
         Krate::Std => ctx.data().std.search(query, 10),
         Krate::Core => ctx.data().core.search(query, 10),
@@ -78,7 +78,7 @@ fn get_suggestions<'a>(
 
     search_results
         .iter()
-        .map(|result| (&result.name, result.id))
+        .map(|result| (result.path.join("::"), result.id))
         .collect()
 }
 
