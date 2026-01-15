@@ -1,4 +1,4 @@
-use poise::CreateReply;
+use poise::{CreateReply, serenity_prelude::CreateAttachment};
 
 use crate::{
     Context, Error,
@@ -14,7 +14,8 @@ pub(super) struct BotResponse<'a> {
 
 impl<'a> BotResponse<'a> {
     const MAX_LINES: usize = 30;
-    const MAX_BYTES: usize = 2000;
+    const MAX_REPLY_BYTES: usize = 2000;
+    const MAX_FILE_BYTES: usize = 1024 * 1024;
 
     pub fn new(
         output: &'a str,
@@ -40,13 +41,46 @@ impl<'a> BotResponse<'a> {
 
         let header = self.format_header();
         let out = escape_triple_backticks(self.output);
-        let out = limit_string(&out, Self::MAX_LINES, Self::MAX_BYTES - 13 - header.len());
-        let reply = format!("{header}\n```text\n{out}\n```");
+        let message_size = 13 + header.len() + out.len();
 
-        ctx.send(CreateReply::default().content(reply).reply(true))
-            .await?;
+        let reply = if message_size > Self::MAX_REPLY_BYTES {
+            self.file_reply(&header)
+        } else {
+            Self::normal_reply(&header, &out)
+        };
+
+        ctx.send(reply).await?;
 
         Ok(())
+    }
+
+    fn normal_reply(header: &str, out: &str) -> CreateReply {
+        let out = limit_string(
+            out,
+            Self::MAX_LINES,
+            Self::MAX_REPLY_BYTES - 13 - header.len(),
+        );
+        let content = format!("{header}\n```text\n{out}\n```");
+        CreateReply::default().content(content).reply(true)
+    }
+
+    fn file_reply(&self, header: &str) -> CreateReply {
+        let content = format!("{header} (output too large, sent as file)");
+
+        if self.output.len() > Self::MAX_FILE_BYTES {
+            let content = format!(
+                "output too large bigger than {} bytes => output not sent",
+                Self::MAX_FILE_BYTES
+            );
+            return CreateReply::default().content(content).reply(true);
+        }
+
+        let file_content = self.output.as_bytes();
+        let attachment = CreateAttachment::bytes(file_content, "output.txt");
+        CreateReply::default()
+            .content(content)
+            .attachment(attachment)
+            .reply(true)
     }
 
     fn format_empty_reply(&self) -> String {
