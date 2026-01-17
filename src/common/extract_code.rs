@@ -3,8 +3,9 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 // unsafe code because the bot is called corro
-static EX_RE: LazyLock<Regex> =
-    LazyLock::new(|| unsafe { Regex::new(r"(?s)(.*?)```rust\n(.*?)```").unwrap_unchecked() });
+static EX_RE: LazyLock<Regex> = LazyLock::new(|| unsafe {
+    Regex::new(r"(?s)(.*?)```(?:rust|rs)?\n(.*?)```").unwrap_unchecked()
+});
 
 pub fn extract_before_and_code(msg: &str) -> Result<(&str, &str), CommandError> {
     let Some(cap) = EX_RE.captures(msg) else {

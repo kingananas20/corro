@@ -4,7 +4,12 @@ use poise::{CreateReply, command};
 use std::borrow::Cow;
 
 /// Publish code in a code block to GitHub Gists
-#[command(prefix_command, guild_cooldown = 60, category = "cargo")]
+#[command(
+    prefix_command,
+    guild_cooldown = 60,
+    category = "cargo",
+    track_deletion
+)]
 pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
     let input = input.unwrap_or("".to_owned());
     let (_, code) = crate::common::extract_before_and_code(&input)?;

@@ -30,6 +30,7 @@ async fn main() -> Result<(), Box<Error>> {
             commands::run_code_block(),
             commands::miri_code_block(),
             commands::macro_expansion_code_block(),
+            commands::clippy_code_block(),
             commands::publish(),
             commands::explain(),
             commands::reload_errors(),

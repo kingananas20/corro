@@ -16,7 +16,8 @@ const MIRI_RES: MiriResponse = MiriResponse {
     rename = "miri",
     subcommands("miri_gist", "miri_file"),
     category = "cargo",
-    broadcast_typing
+    broadcast_typing,
+    track_edits
 )]
 pub async fn miri_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_miri, MIRI_RES, "miri").await

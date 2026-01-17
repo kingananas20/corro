@@ -16,7 +16,8 @@ const MACRO_EXPANSION_RES: MacroExpansionResponse = MacroExpansionResponse {
     rename = "macro",
     category = "cargo",
     subcommands("macro_expansion_gist", "macro_expansion_file"),
-    broadcast_typing
+    broadcast_typing,
+    track_edits
 )]
 pub async fn macro_expansion_code_block(
     ctx: Context<'_>,

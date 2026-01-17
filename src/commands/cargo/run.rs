@@ -19,7 +19,8 @@ const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
     rename = "run",
     subcommands("run_gist", "run_file"),
     category = "cargo",
-    broadcast_typing
+    broadcast_typing,
+    track_edits
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
     super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
