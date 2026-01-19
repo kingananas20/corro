@@ -6,10 +6,11 @@ use poise::{
 };
 use tracing::{debug, info};
 
+#[expect(clippy::result_large_err)]
 #[tokio::main]
-async fn main() -> Result<(), Box<Error>> {
+async fn main() -> Result<(), Error> {
     dotenv().ok();
-    let config = parse_config();
+    let config = parse_config()?;
     setup_logging(&config.logging);
     info!("Config parsed and logging initialized");
 

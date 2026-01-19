@@ -20,6 +20,8 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error("Error while trying to join task: {0}")]
     TaskJoin(#[from] tokio::task::JoinError),
+    #[error("Error while building or serializing config: {0}")]
+    Config(#[from] config::ConfigError),
 }
 
 impl Error {
