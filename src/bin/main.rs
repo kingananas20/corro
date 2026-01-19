@@ -34,7 +34,6 @@ async fn main() -> Result<(), Error> {
             commands::clippy_code_block(),
             commands::publish(),
             commands::explain(),
-            commands::reload_errors(),
             commands::krate(),
             //commands::docs(),
         ],

@@ -4,7 +4,6 @@ mod load_errors;
 
 use crate::{Context, Error, common::split_content_embed, error::CommandError};
 use load_errors::load_error_codes;
-pub use load_errors::reload_errors;
 use poise::{self, CreateReply, serenity_prelude::CreateEmbed};
 
 /// Get an explanation for a specified rust compiler error
@@ -19,7 +18,7 @@ pub async fn explain(
         return Err(Error::Command(CommandError::InvalidErrorCode(error_code)));
     };
 
-    let content = split_content_embed(&error.info);
+    let content = split_content_embed(&error.explanation);
 
     for (i, msg) in content.iter().enumerate() {
         let mut embed = CreateEmbed::new().color((255, 0, 0)).description(*msg);

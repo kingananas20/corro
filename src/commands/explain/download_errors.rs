@@ -48,7 +48,7 @@ pub async fn download() -> Result<Vec<ErrorCode>, Error> {
                 );
                 Ok::<_, Error>(ErrorCode {
                     name,
-                    info: formatted_string,
+                    explanation: formatted_string,
                 })
             }));
         }
