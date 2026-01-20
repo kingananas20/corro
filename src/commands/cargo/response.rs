@@ -2,14 +2,15 @@ use poise::{CreateReply, serenity_prelude::CreateAttachment};
 
 use crate::{
     Context, Error,
-    common::{escape_triple_backticks, limit_string},
+    common::{escape_triple_backticks, limit_string, separate_cargo_output},
 };
 
 pub(super) struct BotResponse<'a> {
+    success: bool,
     output: &'a str,
     source_label: &'a str,
-    source_url: Option<&'a str>,
     tool_name: &'a str,
+    source_url: Option<&'a str>,
 }
 
 impl<'a> BotResponse<'a> {
@@ -18,12 +19,14 @@ impl<'a> BotResponse<'a> {
     const MAX_FILE_BYTES: usize = 1024 * 1024;
 
     pub fn new(
+        success: bool,
         output: &'a str,
         source_label: &'a str,
         source_url: Option<&'a str>,
         tool_name: &'a str,
     ) -> Self {
         Self {
+            success,
             output,
             source_label,
             source_url,
@@ -41,12 +44,23 @@ impl<'a> BotResponse<'a> {
 
         let header = self.format_header();
         let out = escape_triple_backticks(self.output);
-        let message_size = 13 + header.len() + out.len();
-
-        let reply = if message_size > Self::MAX_REPLY_BYTES {
-            self.file_reply(&header)
+        let (cargo, other) = separate_cargo_output(&out);
+        let message_size = if self.success {
+            13 + header.len() + other.len()
         } else {
-            Self::normal_reply(&header, &out)
+            13 + header.len() + cargo.len()
+        };
+
+        let reply = if message_size > Self::MAX_REPLY_BYTES && self.success {
+            Self::file_reply(&header, other)
+        } else if message_size > Self::MAX_REPLY_BYTES && !self.success {
+            Self::file_reply(&header, cargo)
+        } else if message_size <= Self::MAX_REPLY_BYTES && self.success {
+            Self::normal_reply(&header, other)
+        } else if message_size <= Self::MAX_REPLY_BYTES && !self.success {
+            Self::normal_reply(&header, cargo)
+        } else {
+            unimplemented!()
         };
 
         ctx.send(reply).await?;
@@ -64,10 +78,10 @@ impl<'a> BotResponse<'a> {
         CreateReply::default().content(content).reply(true)
     }
 
-    fn file_reply(&self, header: &str) -> CreateReply {
+    fn file_reply(header: &str, out: &str) -> CreateReply {
         let content = format!("{header} (output too large, sent as file)");
 
-        if self.output.len() > Self::MAX_FILE_BYTES {
+        if out.len() > Self::MAX_FILE_BYTES {
             let content = format!(
                 "output too large bigger than {} bytes => output not sent",
                 Self::MAX_FILE_BYTES
@@ -75,7 +89,7 @@ impl<'a> BotResponse<'a> {
             return CreateReply::default().content(content).reply(true);
         }
 
-        let file_content = self.output.as_bytes();
+        let file_content = out.as_bytes();
         let attachment = CreateAttachment::bytes(file_content, "output.txt");
         CreateReply::default()
             .content(content)

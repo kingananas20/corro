@@ -95,7 +95,11 @@ impl<'wc> super::WithCode<'wc> for ClippyRequest<'wc> {
 }
 
 impl<'a> super::Output for ClippyResponse<'a> {
-    fn output(self) -> String {
+    fn success(&self) -> bool {
+        self.success
+    }
+
+    fn output(&self) -> String {
         format!("{}{}", self.stderr, self.stdout)
     }
 }

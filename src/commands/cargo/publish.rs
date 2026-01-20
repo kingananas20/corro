@@ -12,7 +12,7 @@ use std::borrow::Cow;
 )]
 pub async fn publish(ctx: Context<'_>, #[rest] input: Option<String>) -> Result<(), Error> {
     let input = input.unwrap_or("".to_owned());
-    let (_, code) = crate::common::extract_before_and_code(&input)?;
+    let (_, code) = crate::common::separate_code(&input)?;
     let res = ctx
         .data()
         .playground_client

@@ -1,7 +1,8 @@
 use std::borrow::Cow;
 
 pub(super) trait Output {
-    fn output(self) -> String;
+    fn success(&self) -> bool;
+    fn output(&self) -> String;
 }
 
 pub(super) trait WithCode<'wc> {

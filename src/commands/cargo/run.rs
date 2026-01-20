@@ -122,7 +122,11 @@ impl<'wc> super::WithCode<'wc> for ExecuteRequest<'wc> {
 }
 
 impl<'a> super::Output for ExecuteResponse<'a> {
-    fn output(self) -> String {
+    fn success(&self) -> bool {
+        self.success
+    }
+
+    fn output(&self) -> String {
         format!("{}{}", self.stderr, self.stdout)
     }
 }
