@@ -23,7 +23,7 @@ const EXECUTE_RES: ExecuteResponse = ExecuteResponse {
     track_edits
 )]
 pub async fn run_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    super::code_block(ctx, &input, parse_run_command, EXECUTE_RES, "run").await
+    super::code_block(ctx, &input, parse_run_command, false, EXECUTE_RES, "run").await
 }
 
 /// Runs code from a Github gist
@@ -56,7 +56,7 @@ async fn run_gist(
 
     ctx.defer().await?;
 
-    super::gist(ctx, &id, req, EXECUTE_RES, "run").await
+    super::gist(ctx, &id, req, false, EXECUTE_RES, "run").await
 }
 
 /// Runs code from a Rust source file upload
@@ -89,7 +89,7 @@ async fn run_file(
 
     ctx.defer().await?;
 
-    super::file(ctx, file, req, EXECUTE_RES, "run").await
+    super::file(ctx, file, req, false, EXECUTE_RES, "run").await
 }
 
 fn parse_run_command(command: &'_ str) -> ExecuteRequest<'_> {

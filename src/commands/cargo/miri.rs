@@ -20,7 +20,7 @@ const MIRI_RES: MiriResponse = MiriResponse {
     track_edits
 )]
 pub async fn miri_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    super::code_block(ctx, &input, parse_miri, MIRI_RES, "miri").await
+    super::code_block(ctx, &input, parse_miri, false, MIRI_RES, "miri").await
 }
 
 /// Runs code from a Github gist using miri
@@ -47,7 +47,7 @@ async fn miri_gist(
 
     ctx.defer().await?;
 
-    super::gist(ctx, &id, req, MIRI_RES, "miri").await
+    super::gist(ctx, &id, req, false, MIRI_RES, "miri").await
 }
 
 /// Run code from a rust file using miri
@@ -74,7 +74,7 @@ async fn miri_file(
 
     ctx.defer().await?;
 
-    super::file(ctx, file, req, MIRI_RES, "miri").await
+    super::file(ctx, file, req, false, MIRI_RES, "miri").await
 }
 
 fn parse_miri(command: &'_ str) -> MiriRequest<'_> {

@@ -27,6 +27,7 @@ pub async fn macro_expansion_code_block(
         ctx,
         &input,
         parse_macro_expansion,
+        false,
         MACRO_EXPANSION_RES,
         "macro_expansion",
     )
@@ -48,7 +49,7 @@ async fn macro_expansion_gist(
         ..Default::default()
     };
 
-    super::gist(ctx, &id, req, MACRO_EXPANSION_RES, "macro expansion").await
+    super::gist(ctx, &id, req, false, MACRO_EXPANSION_RES, "macro expansion").await
 }
 
 #[poise::command(
@@ -67,7 +68,15 @@ async fn macro_expansion_file(
         ..Default::default()
     };
 
-    super::file(ctx, file, req, MACRO_EXPANSION_RES, "macro expansion").await
+    super::file(
+        ctx,
+        file,
+        req,
+        false,
+        MACRO_EXPANSION_RES,
+        "macro expansion",
+    )
+    .await
 }
 
 fn parse_macro_expansion(input: &'_ str) -> MacroExpansionRequest<'_> {

@@ -20,7 +20,7 @@ const CLIPPY_RES: ClippyResponse = ClippyResponse {
     track_edits
 )]
 pub async fn clippy_code_block(ctx: Context<'_>, #[rest] input: String) -> Result<(), Error> {
-    super::code_block(ctx, &input, parse_clippy, CLIPPY_RES, "clippy").await
+    super::code_block(ctx, &input, parse_clippy, false, CLIPPY_RES, "clippy").await
 }
 
 #[poise::command(
@@ -43,7 +43,7 @@ async fn clippy_gist(
         ..Default::default()
     };
 
-    super::gist(ctx, &id, req, CLIPPY_RES, "clippy").await
+    super::gist(ctx, &id, req, false, CLIPPY_RES, "clippy").await
 }
 
 #[poise::command(
@@ -66,7 +66,7 @@ async fn clippy_file(
         ..Default::default()
     };
 
-    super::file(ctx, file, req, CLIPPY_RES, "clippy").await
+    super::file(ctx, file, req, false, CLIPPY_RES, "clippy").await
 }
 
 fn parse_clippy(input: &str) -> ClippyRequest<'_> {

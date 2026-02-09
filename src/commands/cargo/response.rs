@@ -15,6 +15,7 @@ impl<'a> BotResponse<'a> {
     const MAX_LINES: usize = 30;
     const MAX_REPLY_BYTES: usize = 2000;
     const MAX_FILE_BYTES: usize = 1024 * 1024;
+    const FORMAT_STRING_LEN: usize = 13;
 
     pub fn new(
         output: &'a str,
@@ -30,7 +31,7 @@ impl<'a> BotResponse<'a> {
         }
     }
 
-    pub async fn send(self, ctx: Context<'_>) -> Result<(), Error> {
+    pub async fn send(self, ctx: Context<'_>, respond_with_file: bool) -> Result<(), Error> {
         if self.output.is_empty() {
             let reply = self.format_empty_reply();
             ctx.send(CreateReply::default().content(reply).reply(true))
@@ -40,9 +41,9 @@ impl<'a> BotResponse<'a> {
 
         let header = self.format_header();
         let out = escape_triple_backticks(self.output);
-        let message_size = 13 + header.len() + out.len();
+        let message_size = Self::FORMAT_STRING_LEN + header.len() + out.len();
 
-        let reply = if message_size > Self::MAX_REPLY_BYTES {
+        let reply = if message_size > Self::MAX_REPLY_BYTES || respond_with_file {
             Self::file_reply(&header, &out)
         } else {
             Self::normal_reply(&header, &out)
@@ -57,7 +58,7 @@ impl<'a> BotResponse<'a> {
         let out = limit_string(
             out,
             Self::MAX_LINES,
-            Self::MAX_REPLY_BYTES - 13 - header.len(),
+            Self::MAX_REPLY_BYTES - Self::FORMAT_STRING_LEN - header.len(),
         );
         let content = format!("{header}\n```text\n{out}\n```");
         CreateReply::default().content(content).reply(true)
