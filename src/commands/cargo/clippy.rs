@@ -72,18 +72,20 @@ async fn clippy_file(
 fn parse_clippy(input: &str) -> ClippyRequest<'_> {
     let mut req = ClippyRequest::default();
 
-    input.split_whitespace().for_each(|arg| match arg {
-        "stable" => req.channel = Channel::Stable,
-        "beta" => req.channel = Channel::Beta,
-        "nightly" => req.channel = Channel::Nightly,
-        "bin" => req.crate_type = CrateType::Binary,
-        "lib" => req.crate_type = CrateType::Library,
-        "2015" => req.edition = Edition::Edition2015,
-        "2018" => req.edition = Edition::Edition2018,
-        "2021" => req.edition = Edition::Edition2021,
-        "2024" => req.edition = Edition::Edition2024,
-        _ => {}
-    });
+    input
+        .split_whitespace()
+        .for_each(|arg| match arg.to_lowercase().as_str() {
+            "stable" => req.channel = Channel::Stable,
+            "beta" => req.channel = Channel::Beta,
+            "nightly" => req.channel = Channel::Nightly,
+            "bin" => req.crate_type = CrateType::Binary,
+            "lib" => req.crate_type = CrateType::Library,
+            "2015" => req.edition = Edition::Edition2015,
+            "2018" => req.edition = Edition::Edition2018,
+            "2021" => req.edition = Edition::Edition2021,
+            "2024" => req.edition = Edition::Edition2024,
+            _ => {}
+        });
 
     req
 }

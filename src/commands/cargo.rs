@@ -1,6 +1,7 @@
 mod clippy;
 mod code_block;
 mod common;
+mod compile;
 mod crates;
 mod file;
 mod gist;
@@ -12,6 +13,7 @@ mod run;
 mod version;
 
 pub use clippy::clippy_code_block;
+pub use compile::compile_code_block;
 pub use macro_expansion::macro_expansion_code_block;
 pub use miri::miri_code_block;
 pub use publish::publish;

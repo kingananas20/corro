@@ -2,7 +2,7 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static REGEX: LazyLock<Regex> = LazyLock::new(|| unsafe {
-    Regex::new(r"(?sm)^(.*?^\s*(?:Running|error: could not compile)[^\n]*\n?)(.*)")
+    Regex::new(r"(?sm)^(.*?^\s*(?:Running|error: could not compile|Finished)[^\n]*\n?)(.*)")
         .unwrap_unchecked()
 });
 

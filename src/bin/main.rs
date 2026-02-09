@@ -32,6 +32,7 @@ async fn main() -> Result<(), Error> {
             commands::miri_code_block(),
             commands::macro_expansion_code_block(),
             commands::clippy_code_block(),
+            commands::compile_code_block(),
             commands::publish(),
             commands::explain(),
             commands::krate(),

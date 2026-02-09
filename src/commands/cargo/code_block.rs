@@ -21,6 +21,7 @@ where
     req.with_code(code);
 
     let res: Res = ctx.data().playground_client.post(&req).await?;
+    println!("{res:?}");
     let out = res.output();
 
     let bot_res = BotResponse::new(&out, "code_block", None, tool_name);
