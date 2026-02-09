@@ -6,13 +6,12 @@ pub(super) trait Output {
     fn stdout(&self) -> &str;
     fn stderr(&self) -> &str;
     fn output(&self) -> Cow<'_, str> {
-        let success = self.success();
-        if success {
+        if self.success() {
             let combi = format!("{}\n{}", self.stderr(), self.stdout());
             let (_, other) = separate_cargo_output(&combi);
             Cow::Owned(other.to_owned())
         } else {
-            Cow::Borrowed(self.stdout())
+            Cow::Borrowed(self.stderr())
         }
     }
 }
