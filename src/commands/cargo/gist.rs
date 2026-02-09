@@ -8,7 +8,7 @@ pub(super) async fn gist<'a, Req, Res>(
     ctx: Context<'_>,
     id: &str,
     mut req: Req,
-    respond_with_file: bool,
+    force_file_response: bool,
     _res_type: Res,
     tool_name: &str,
 ) -> Result<(), Error>
@@ -38,7 +38,7 @@ where
 
     let url = format!("https://gist.github.com/{id}");
     let bot_res = BotResponse::new(&out, "gist", Some(&url), tool_name);
-    bot_res.send(ctx, respond_with_file).await?;
+    bot_res.send(ctx, force_file_response).await?;
 
     Ok(())
 }

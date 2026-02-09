@@ -6,7 +6,7 @@ pub(super) async fn code_block<'a, F, Req, Res>(
     ctx: Context<'_>,
     input: &'a str,
     parser: F,
-    respond_with_file: bool,
+    force_file_responce: bool,
     _res_type: Res,
     tool_name: &str,
 ) -> Result<(), Error>
@@ -24,7 +24,7 @@ where
     let out = res.output();
 
     let bot_res = BotResponse::new(&out, "code_block", None, tool_name);
-    bot_res.send(ctx, respond_with_file).await?;
+    bot_res.send(ctx, force_file_responce).await?;
 
     Ok(())
 }

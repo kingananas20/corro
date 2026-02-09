@@ -7,7 +7,7 @@ pub(super) async fn file<'a, Req, Res>(
     ctx: Context<'_>,
     file: Attachment,
     mut req: Req,
-    respond_with_file: bool,
+    force_file_response: bool,
     _res_type: Res,
     tool_name: &str,
 ) -> Result<(), Error>
@@ -33,7 +33,7 @@ where
     let filename = file.filename;
     let file_url = file.url;
     let bot_res = BotResponse::new(&out, &filename, Some(&file_url), tool_name);
-    bot_res.send(ctx, respond_with_file).await?;
+    bot_res.send(ctx, force_file_response).await?;
 
     Ok(())
 }

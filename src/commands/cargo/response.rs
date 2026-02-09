@@ -31,7 +31,7 @@ impl<'a> BotResponse<'a> {
         }
     }
 
-    pub async fn send(self, ctx: Context<'_>, respond_with_file: bool) -> Result<(), Error> {
+    pub async fn send(self, ctx: Context<'_>, force_file_response: bool) -> Result<(), Error> {
         if self.output.is_empty() {
             let reply = self.format_empty_reply();
             ctx.send(CreateReply::default().content(reply).reply(true))
@@ -43,7 +43,7 @@ impl<'a> BotResponse<'a> {
         let out = escape_triple_backticks(self.output);
         let message_size = Self::FORMAT_STRING_LEN + header.len() + out.len();
 
-        let reply = if message_size > Self::MAX_REPLY_BYTES || respond_with_file {
+        let reply = if message_size > Self::MAX_REPLY_BYTES || force_file_response {
             Self::file_reply(&header, &out)
         } else {
             Self::normal_reply(&header, &out)
