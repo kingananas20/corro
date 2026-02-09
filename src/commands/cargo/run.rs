@@ -126,7 +126,11 @@ impl<'a> super::Output for ExecuteResponse<'a> {
         self.success
     }
 
-    fn output(&self) -> String {
-        format!("{}{}", self.stderr, self.stdout)
+    fn stdout(&self) -> &str {
+        &self.stdout
+    }
+
+    fn stderr(&self) -> &str {
+        &self.stderr
     }
 }

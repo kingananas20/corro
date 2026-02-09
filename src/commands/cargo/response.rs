@@ -1,12 +1,10 @@
-use poise::{CreateReply, serenity_prelude::CreateAttachment};
-
 use crate::{
     Context, Error,
-    common::{escape_triple_backticks, limit_string, separate_cargo_output},
+    common::{escape_triple_backticks, limit_string},
 };
+use poise::{CreateReply, serenity_prelude::CreateAttachment};
 
 pub(super) struct BotResponse<'a> {
-    success: bool,
     output: &'a str,
     source_label: &'a str,
     tool_name: &'a str,
@@ -19,14 +17,12 @@ impl<'a> BotResponse<'a> {
     const MAX_FILE_BYTES: usize = 1024 * 1024;
 
     pub fn new(
-        success: bool,
         output: &'a str,
         source_label: &'a str,
         source_url: Option<&'a str>,
         tool_name: &'a str,
     ) -> Self {
         Self {
-            success,
             output,
             source_label,
             source_url,
@@ -44,23 +40,12 @@ impl<'a> BotResponse<'a> {
 
         let header = self.format_header();
         let out = escape_triple_backticks(self.output);
-        let (cargo, other) = separate_cargo_output(&out);
-        let message_size = if self.success {
-            13 + header.len() + other.len()
-        } else {
-            13 + header.len() + cargo.len()
-        };
+        let message_size = 13 + header.len() + out.len();
 
-        let reply = if message_size > Self::MAX_REPLY_BYTES && self.success {
-            Self::file_reply(&header, other)
-        } else if message_size > Self::MAX_REPLY_BYTES && !self.success {
-            Self::file_reply(&header, cargo)
-        } else if message_size <= Self::MAX_REPLY_BYTES && self.success {
-            Self::normal_reply(&header, other)
-        } else if message_size <= Self::MAX_REPLY_BYTES && !self.success {
-            Self::normal_reply(&header, cargo)
+        let reply = if message_size > Self::MAX_REPLY_BYTES {
+            Self::file_reply(&header, &out)
         } else {
-            unimplemented!()
+            Self::normal_reply(&header, &out)
         };
 
         ctx.send(reply).await?;

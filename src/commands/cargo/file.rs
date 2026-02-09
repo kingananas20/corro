@@ -31,7 +31,7 @@ where
 
     let filename = file.filename;
     let file_url = file.url;
-    let bot_res = BotResponse::new(res.success(), &out, &filename, Some(&file_url), tool_name);
+    let bot_res = BotResponse::new(&out, &filename, Some(&file_url), tool_name);
     bot_res.send(ctx).await?;
 
     Ok(())

@@ -36,7 +36,7 @@ where
     let out = res.output();
 
     let url = format!("https://gist.github.com/{id}");
-    let bot_res = BotResponse::new(res.success(), &out, "gist", Some(&url), tool_name);
+    let bot_res = BotResponse::new(&out, "gist", Some(&url), tool_name);
     bot_res.send(ctx).await?;
 
     Ok(())

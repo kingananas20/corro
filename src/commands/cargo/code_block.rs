@@ -22,7 +22,7 @@ where
     let res: Res = ctx.data().playground_client.post(&req).await?;
     let out = res.output();
 
-    let bot_res = BotResponse::new(res.success(), &out, "code_block", None, tool_name);
+    let bot_res = BotResponse::new(&out, "code_block", None, tool_name);
     bot_res.send(ctx).await?;
 
     Ok(())
